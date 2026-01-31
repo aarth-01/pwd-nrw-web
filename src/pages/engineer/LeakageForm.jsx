@@ -6,11 +6,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 
 export default function LeakageForm() {
   const navigate = useNavigate();
+  const locationData = useLocation();
 
   const [formData, setFormData] = useState({
     constituency: "",
@@ -29,19 +30,22 @@ export default function LeakageForm() {
   };
 
   const handleSubmit = () => {
-    // Convert duration to total minutes
+    
+    const geoLocation = locationData.state?.location || null;
+
+
     const totalMinutes =
       Number(formData.days) * 1440 +
       Number(formData.hours) * 60 +
       Number(formData.minutes);
 
-    // Simple water loss logic (demo-friendly)
     const estimatedLoss = totalMinutes * 50; // 50 litres per minute (assumed)
 
     navigate("/engineer/success", {
       state: {
         loss: estimatedLoss,
         minutes: totalMinutes,
+        location: geoLocation,
       },
     });
   };

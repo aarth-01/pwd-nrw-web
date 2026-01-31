@@ -3,8 +3,9 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 
 export default function Success() {
-  const location = useLocation();
-  const { loss, minutes } = location.state || {};
+  const locationState = useLocation();
+  const { loss, minutes, location } = locationState.state || {};
+
 
   let message = "Leakage recorded successfully.";
 
@@ -32,8 +33,18 @@ export default function Success() {
               Estimated Water Lost: <b>{loss} litres</b>
             </Typography>
 
+            {location && (
+                <Typography sx={{ mt: 2 }}>
+                    Location captured:  
+                    <br />
+                    Lat: {location.lat.toFixed(4)}, Lng: {location.lng.toFixed(4)}
+                </Typography>
+            )}
+
+
             <Typography sx={{ mt: 2 }}>{message}</Typography>
           </CardContent>
+          
         </Card>
       </Container>
     </>
