@@ -13,14 +13,40 @@ import {
 import Navbar from "../../components/Navbar";
 import { mockLeakages } from "../../data/mockLeakages";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar, Line } from "react-chartjs-2";
+
+// Register chart components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+);
+
 // Helper functions
 const getMonth = (dateStr) => new Date(dateStr).getMonth();
-const currentMonth = new Date().getMonth();
+const activeMonth = Math.max(
+  ...mockLeakages.map((item) => getMonth(item.date))
+);
+
 
 export default function Summary() {
-  // Current month data
+  /* ---------------- CURRENT MONTH DATA ---------------- */
   const monthlyData = mockLeakages.filter(
-    (item) => getMonth(item.date) === currentMonth
+    (item) => getMonth(item.date) === activeMonth
   );
 
   const totalMonthlyLoss = monthlyData.reduce(
@@ -28,7 +54,7 @@ export default function Summary() {
     0
   );
 
-  // Constituency-wise aggregation
+  /* ---------------- CONSTITUENCY AGGREGATION ---------------- */
   const constituencySummary = {};
 
   monthlyData.forEach((item) => {
@@ -41,6 +67,38 @@ export default function Summary() {
     constituencySummary[item.constituency].count += 1;
     constituencySummary[item.constituency].loss += item.waterLoss;
   });
+
+  /* ---------------- BAR CHART DATA ---------------- */
+  const barChartData = {
+    labels: Object.keys(constituencySummary),
+    datasets: [
+      {
+        label: "Water Loss (litres)",
+        data: Object.values(constituencySummary).map(
+          (item) => item.loss
+        ),
+        backgroundColor: "#1976d2",
+      },
+    ],
+  };
+
+  /* ---------------- LINE CHART DATA ---------------- */
+  const sortedByDate = [...monthlyData].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  const lineChartData = {
+    labels: sortedByDate.map((item) => item.date),
+    datasets: [
+      {
+        label: "Daily Water Loss (litres)",
+        data: sortedByDate.map((item) => item.waterLoss),
+        borderColor: "#0d47a1",
+        backgroundColor: "#0d47a1",
+        fill: false,
+      },
+    ],
+  };
 
   return (
     <>
@@ -102,6 +160,23 @@ export default function Summary() {
             ))}
           </TableBody>
         </Table>
+
+        {/* CHARTS */}
+        <Grid container spacing={4} sx={{ mt: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Constituency-wise Water Loss
+            </Typography>
+            <Bar data={barChartData} />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Water Loss Trend (This Month)
+            </Typography>
+            <Line data={lineChartData} />
+          </Grid>
+        </Grid>
       </Container>
     </>
   );
