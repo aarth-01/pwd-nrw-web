@@ -1,18 +1,22 @@
 import {
   Button,
   TextField,
+  Container,
   Typography,
+  Paper,
   Box,
-  Stack,
-  Paper
+  InputAdornment,
+  IconButton
 } from "@mui/material";
+import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [showPass, setShowPass] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -23,122 +27,112 @@ export default function Login() {
     }
   };
 
-  const handleOtpChange = (value, index) => {
-    if (!/^\d?$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-  };
-
   return (
     <Box
       sx={{
-        height: "100vh",
-        width: "100vw",
-        background: "linear-gradient(135deg, #081b3a, #0b6fa3)",
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
       }}
     >
-      {/* Glass Effect */}
-      <Box
-        sx={{
-          width: 420,
-          p: 4,
-          borderRadius: 4,
-          background: "rgba(255,255,255,0.12)",
-          backdropFilter: "blur(14px)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-          textAlign: "center"
-        }}
-      >
-        <Typography
-          variant="subtitle2"
-          sx={{ color: "#bde9ff", mb: 1 }}
-        >
-          Government of Goa · Smart Water
-        </Typography>
-
-        <Typography
-          variant="h6"
-          sx={{ color: "#ffffff", mb: 3 }}
-        >
-          Smart Water Analytics and NRW Intelligence
-        </Typography>
-
+      <Container maxWidth="sm">
         <Paper
-          elevation={0}
+          elevation={10}
           sx={{
-            p: 3,
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.92)"
+            p: 6,
+            borderRadius: 5,
+            backdropFilter: "blur(10px)",
+            background: "rgba(255,255,255,0.95)",
+            transition: "0.3s",
+            "&:hover": {
+              transform: "translateY(-4px)"
+            }
           }}
         >
+          {/* Title */}
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            color="primary"
+            gutterBottom
+            textAlign="center"
+          >
+            💧 Public Works Department
+          </Typography>
+
+          <Typography
+            variant="subtitle1"
+            textAlign="center"
+            sx={{ mb: 4, opacity: 0.8 }}
+          >
+            Drinking Water – NRW Management System
+          </Typography>
+
+          {/* Email */}
           <TextField
             fullWidth
-            label="Email"
+            label="Email Address"
+            variant="outlined"
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{ mb: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email color="primary" />
+                </InputAdornment>
+              )
+            }}
           />
 
+          {/* Password */}
           <TextField
             fullWidth
             label="Password"
-            type="password"
+            type={showPass ? "text" : "password"}
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock color="primary" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPass(!showPass)}>
+                    {showPass ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
 
-          <Stack
-            direction="row"
-            spacing={1.5}
-            justifyContent="center"
-            sx={{ my: 2 }}
-          >
-            {otp.map((digit, index) => (
-              <TextField
-                key={index}
-                value={digit}
-                onChange={(e) =>
-                  handleOtpChange(e.target.value, index)
-                }
-                inputProps={{
-                  maxLength: 1,
-                  style: { textAlign: "center", fontSize: 18 }
-                }}
-                sx={{ width: 55 }}
-              />
-            ))}
-          </Stack>
-
+          {/* Login Button */}
           <Button
             fullWidth
             variant="contained"
+            size="large"
             sx={{
-              mt: 2,
-              py: 1.2,
-              borderRadius: 6,
-              background:
-                "linear-gradient(135deg, #00c6ff, #0072ff)"
+              mt: 4,
+              py: 1.6,
+              fontWeight: "bold",
+              fontSize: "16px",
+              borderRadius: 3,
+              textTransform: "none",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.2)"
             }}
             onClick={handleLogin}
           >
-            LOGIN SECURELY
+            Login Securely
           </Button>
         </Paper>
-
-        <Typography
-          variant="caption"
-          sx={{ color: "#dbeafe", mt: 2, display: "block" }}
-        >
-          PWD · Government of Goa
-        </Typography>
-      </Box>
+      </Container>
     </Box>
   );
 }
-
-
