@@ -1,10 +1,10 @@
 import {
   Button,
   TextField,
-  Container,
   Typography,
   Box,
-  Stack
+  Stack,
+  Paper
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,6 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    // TEMP role logic for demo
     if (email === "viraj.patil@pwd.gov.in") {
       navigate("/admin/dashboard");
     } else {
@@ -34,112 +33,112 @@ export default function Login() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        height: "100vh",
+        width: "100vw",
         background: "linear-gradient(135deg, #081b3a, #0b6fa3)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
       }}
     >
-      <Container maxWidth="sm">
-        {/* Glass container */}
-        <Box
+      {/* Glass Effect */}
+      <Box
+        sx={{
+          width: 420,
+          p: 4,
+          borderRadius: 4,
+          background: "rgba(255,255,255,0.12)",
+          backdropFilter: "blur(14px)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+          textAlign: "center"
+        }}
+      >
+        <Typography
+          variant="subtitle2"
+          sx={{ color: "#bde9ff", mb: 1 }}
+        >
+          Government of Goa · Smart Water
+        </Typography>
+
+        <Typography
+          variant="h6"
+          sx={{ color: "#ffffff", mb: 3 }}
+        >
+          Smart Water Analytics and NRW Intelligence
+        </Typography>
+
+        <Paper
+          elevation={0}
           sx={{
-            p: 4,
-            borderRadius: 4,
-            background: "rgba(255,255,255,0.1)",
-            backdropFilter: "blur(12px)",
-            boxShadow: "0 0 30px rgba(0,0,0,0.3)",
-            textAlign: "center"
+            p: 3,
+            borderRadius: 3,
+            background: "rgba(255,255,255,0.92)"
           }}
         >
-          <Typography
-            variant="subtitle2"
-            sx={{ color: "#bde9ff", mb: 1 }}
-          >
-            Government of Goa · Smart Water
-          </Typography>
+          <TextField
+            fullWidth
+            label="Email"
+            margin="normal"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <Typography
-            variant="h6"
-            sx={{ color: "#fff", mb: 3 }}
-          >
-            Smart Water Analytics and NRW Intelligence
-          </Typography>
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          {/* Login Card */}
-          <Box
+          <Stack
+            direction="row"
+            spacing={1.5}
+            justifyContent="center"
+            sx={{ my: 2 }}
+          >
+            {otp.map((digit, index) => (
+              <TextField
+                key={index}
+                value={digit}
+                onChange={(e) =>
+                  handleOtpChange(e.target.value, index)
+                }
+                inputProps={{
+                  maxLength: 1,
+                  style: { textAlign: "center", fontSize: 18 }
+                }}
+                sx={{ width: 55 }}
+              />
+            ))}
+          </Stack>
+
+          <Button
+            fullWidth
+            variant="contained"
             sx={{
-              background: "rgba(255,255,255,0.9)",
-              p: 3,
-              borderRadius: 3
+              mt: 2,
+              py: 1.2,
+              borderRadius: 6,
+              background:
+                "linear-gradient(135deg, #00c6ff, #0072ff)"
             }}
+            onClick={handleLogin}
           >
-            <TextField
-              fullWidth
-              label="Email"
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            LOGIN SECURELY
+          </Button>
+        </Paper>
 
-            <TextField
-              fullWidth
-              label="Password"
-              type="password"
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            {/* OTP */}
-            <Stack
-              direction="row"
-              spacing={1.5}
-              justifyContent="center"
-              sx={{ my: 2 }}
-            >
-              {otp.map((digit, index) => (
-                <TextField
-                  key={index}
-                  value={digit}
-                  onChange={(e) =>
-                    handleOtpChange(e.target.value, index)
-                  }
-                  inputProps={{
-                    maxLength: 1,
-                    style: { textAlign: "center", fontSize: 18 }
-                  }}
-                  sx={{ width: 55 }}
-                />
-              ))}
-            </Stack>
-
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                mt: 2,
-                borderRadius: 6,
-                py: 1.2,
-                background:
-                  "linear-gradient(135deg, #00c6ff, #0072ff)"
-              }}
-              onClick={handleLogin}
-            >
-              LOGIN SECURELY
-            </Button>
-          </Box>
-
-          <Typography
-            variant="caption"
-            sx={{ color: "#dbeafe", mt: 2, display: "block" }}
-          >
-            PWD · Government of Goa
-          </Typography>
-        </Box>
-      </Container>
+        <Typography
+          variant="caption"
+          sx={{ color: "#dbeafe", mt: 2, display: "block" }}
+        >
+          PWD · Government of Goa
+        </Typography>
+      </Box>
     </Box>
   );
 }
+
 
