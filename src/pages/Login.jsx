@@ -8,6 +8,8 @@ import {
   InputAdornment,
   IconButton
 } from "@mui/material";
+import { auth } from "../firebase";
+console.log("Firebase Auth:", auth);
 import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
