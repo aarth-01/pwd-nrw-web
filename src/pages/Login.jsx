@@ -18,7 +18,8 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import sideImage from "../assets/front-image.jpg"; // ✅ your RHS image
+import bg from "../assets/backg-water.jpg";     // ✅ background
+import sideImage from "../assets/front-image.jpg"; // ✅ RHS image
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -34,6 +35,7 @@ export default function Login() {
       navigate("/engineer/leakage-form");
     }
   };
+
   return (
     <Box
       sx={{
@@ -41,11 +43,12 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-  
-        /* ✅ KEEP original water background */
+        p: 2,
+
+        /* ✅ water background with dark overlay */
         backgroundImage: `
-          linear-gradient(rgba(0,60,90,0.6), rgba(0,60,90,0.6)),
-          url(${require("../assets/backg-water.jpg")})
+          linear-gradient(rgba(0,60,90,0.65), rgba(0,60,90,0.65)),
+          url(${bg})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center"
@@ -55,17 +58,19 @@ export default function Login() {
       <Box
         sx={{
           display: "flex",
-          gap: 0,
           borderRadius: 4,
           overflow: "hidden",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.4)"
+          boxShadow: "0 25px 60px rgba(0,0,0,0.4)",
+
+          /* responsive: stack on mobile */
+          flexDirection: { xs: "column", md: "row" }
         }}
       >
         {/* ================= LEFT : LOGIN ================= */}
         <Paper
           elevation={0}
           sx={{
-            width: 420,
+            width: { xs: 320, md: 420 },
             p: 5,
             display: "flex",
             flexDirection: "column",
@@ -76,11 +81,12 @@ export default function Login() {
           <Typography variant="h5" fontWeight="bold">
             Public Works Department
           </Typography>
-  
+
           <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
             Government of Goa • NRW Monitoring System
           </Typography>
-  
+
+          {/* Email */}
           <TextField
             fullWidth
             label="Official Email"
@@ -95,7 +101,8 @@ export default function Login() {
               )
             }}
           />
-  
+
+          {/* Password */}
           <TextField
             fullWidth
             label="Password"
@@ -118,7 +125,8 @@ export default function Login() {
               )
             }}
           />
-  
+
+          {/* Login Button */}
           <Button
             fullWidth
             variant="contained"
@@ -130,12 +138,14 @@ export default function Login() {
               fontWeight: "bold",
               textTransform: "none",
               bgcolor: "#0b5ed7",
-              "&:hover": { bgcolor: "#084298" }
+              "&:hover": {
+                bgcolor: "#084298"
+              }
             }}
           >
             Secure Login
           </Button>
-  
+
           <Typography
             variant="caption"
             sx={{ mt: 3, textAlign: "center", color: "gray" }}
@@ -143,16 +153,19 @@ export default function Login() {
             Authorized personnel only
           </Typography>
         </Paper>
-  
+
         {/* ================= RIGHT : IMAGE ================= */}
         <Box
           sx={{
-            width: 420,                 // same width as login
+            width: { xs: 320, md: 420 },
+            minHeight: 520,
             backgroundImage: `url(${sideImage})`,
             backgroundSize: "cover",
-            backgroundPosition: "center"
+            backgroundPosition: "center",
+            filter: "brightness(0.95)"
           }}
         />
       </Box>
     </Box>
   );
+}
