@@ -1,30 +1,20 @@
 import {
   Button,
   TextField,
+  Container,
   Typography,
-  Paper,
-  Box,
-  InputAdornment,
-  IconButton
+  Box
 } from "@mui/material";
-
-import {
-  Email,
-  Lock,
-  Visibility,
-  VisibilityOff
-} from "@mui/icons-material";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import bg from "../assets/backg-water.jpg";     // ✅ background
-import sideImage from "../assets/front-image.jpg"; // ✅ RHS image
+import bg from "../assets/backg-water.jpg";
+import sideImage from "../assets/front-image.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
 
   const navigate = useNavigate();
 
@@ -43,126 +33,79 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        p: 2,
 
-        /* ✅ water background with dark overlay */
+        /* water background */
         backgroundImage: `
-          linear-gradient(rgba(0,60,90,0.65), rgba(0,60,90,0.65)),
+          linear-gradient(rgba(0,60,90,0.6), rgba(0,60,90,0.6)),
           url(${bg})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center"
       }}
     >
-      {/* MAIN CONTAINER */}
+      {/* simple row layout */}
       <Box
         sx={{
           display: "flex",
-          borderRadius: 4,
+          bgcolor: "white",
+          borderRadius: 2,
           overflow: "hidden",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.4)",
-
-          /* responsive: stack on mobile */
+          boxShadow: 3,
           flexDirection: { xs: "column", md: "row" }
         }}
       >
-        {/* ================= LEFT : LOGIN ================= */}
-        <Paper
-          elevation={0}
+        {/* ================= LOGIN (same style as your original) ================= */}
+        <Container
+          maxWidth="sm"
           sx={{
-            width: { xs: 320, md: 420 },
-            p: 5,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            background: "rgba(255,255,255,0.95)"
+            width: 380,
+            py: 6,
+            textAlign: "center"
           }}
         >
-          <Typography variant="h5" fontWeight="bold">
+          <Typography variant="h5" color="primary" gutterBottom>
             Public Works Department
           </Typography>
 
-          <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
-            Government of Goa • NRW Monitoring System
+          <Typography variant="subtitle2" gutterBottom>
+            Drinking Water – NRW Management System
           </Typography>
 
-          {/* Email */}
           <TextField
             fullWidth
-            label="Official Email"
+            label="Email"
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              )
-            }}
           />
 
-          {/* Password */}
           <TextField
             fullWidth
             label="Password"
-            type={showPass ? "text" : "password"}
+            type="password"
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass(!showPass)}>
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
           />
 
-          {/* Login Button */}
           <Button
             fullWidth
             variant="contained"
+            sx={{ mt: 3 }}
             onClick={handleLogin}
-            sx={{
-              mt: 4,
-              height: 48,
-              borderRadius: 2,
-              fontWeight: "bold",
-              textTransform: "none",
-              bgcolor: "#0b5ed7",
-              "&:hover": {
-                bgcolor: "#084298"
-              }
-            }}
           >
-            Secure Login
+            LOGIN
           </Button>
+        </Container>
 
-          <Typography
-            variant="caption"
-            sx={{ mt: 3, textAlign: "center", color: "gray" }}
-          >
-            Authorized personnel only
-          </Typography>
-        </Paper>
-
-        {/* ================= RIGHT : IMAGE ================= */}
+        {/* ================= RIGHT IMAGE ================= */}
         <Box
           sx={{
-            width: { xs: 320, md: 420 },
-            minHeight: 520,
+            width: 380,
+            minHeight: 420,
             backgroundImage: `url(${sideImage})`,
             backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "brightness(0.95)"
+            backgroundPosition: "center"
           }}
         />
       </Box>
