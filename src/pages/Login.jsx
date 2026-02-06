@@ -12,7 +12,7 @@ import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import bg from "../assets/bg-water.jpg"; 
+import bg from "../assets/backg-water.jpg"; 
 
 export default function Login() {
   const [email, setEmail] = useState("");
