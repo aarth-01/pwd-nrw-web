@@ -37,7 +37,7 @@ export default function Login() {
 
         /* water background */
         backgroundImage: `
-          linear-gradient(rgba(0,60,90,0.6), rgba(0,60,90,0.6)),
+          linear-gradient(rgba(0,90,130,0.35), rgba(0,90,130,0.35)),
           url(${bg})
         `,
         backgroundSize: "cover",
@@ -49,36 +49,38 @@ export default function Login() {
         sx={{
           display: "flex",
           bgcolor: "white",
+          width: { xs: "95%", md: 950 },
           borderRadius: 2,
           overflow: "hidden",
-          boxShadow: 3,
+          boxShadow: 8,
           flexDirection: { xs: "column", md: "row" }
         }}
       >
         {/* ================= LOGIN (same style as your original) ================= */}
         <Container
-          maxWidth="sm"
           sx={{
-            width: 380,
-            py: 6,
+            flex: 1.2,
+            py: 7,
+            px: 6,
             textAlign: "center"
           }}
         >
             {/* ✅ LOGO ABOVE TITLE */}
-          <Box sx={{ mb: 2 }}>
-            <img
-              src={logo}
-              alt="VDASS AquaTrack Logo"
-              style={{ width: 160 }}
-            />
-          </Box>
+           <Box
+            component="img"
+            src={logo}
+            alt="logo"
+            sx={{
+              width: 90,
+              mb: 2
+            }}
+          />
 
-          
-          <Typography variant="h5" color="primary" gutterBottom>
+          <Typography variant="h5" fontWeight="bold" color="primary">
             Public Works Department
           </Typography>
 
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography variant="body2" sx={{ mb: 4 }}>
             Drinking Water – NRW Management System
           </Typography>
 
@@ -102,7 +104,8 @@ export default function Login() {
           <Button
             fullWidth
             variant="contained"
-            sx={{ mt: 3 }}
+            size="large"
+            sx={{ mt: 3, py: 1.3 }}
             onClick={handleLogin}
           >
             LOGIN
@@ -112,8 +115,8 @@ export default function Login() {
         {/* ================= RIGHT IMAGE ================= */}
         <Box
           sx={{
-            width: 380,
-            minHeight: 420,
+            flex: 1,
+            minHeight: { xs: 260, md: 520 },
             backgroundImage: `url(${sideImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center"
