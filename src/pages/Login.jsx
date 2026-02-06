@@ -1,16 +1,23 @@
 import {
   Button,
   TextField,
-  Container,
   Typography,
   Paper,
   Box,
   InputAdornment,
   IconButton
 } from "@mui/material";
-import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
+
+import {
+  Email,
+  Lock,
+  Visibility,
+  VisibilityOff
+} from "@mui/icons-material";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import bg from "../assets/backg-water.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -31,108 +38,115 @@ export default function Login() {
     <Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "flex-start",
+        pl: { xs: 3, md: 10 },
+
+        /* Background with professional dark overlay */
+        backgroundImage: `
+          linear-gradient(
+            rgba(0,60,90,0.75),
+            rgba(0,60,90,0.75)
+          ),
+          url(${bg})
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center"
       }}
     >
-      <Container maxWidth="sm">
-        <Paper
-          elevation={10}
+      {/* LOGIN CARD */}
+      <Paper
+        elevation={0}
+        sx={{
+          width: 420,
+          p: 5,
+          borderRadius: 4,
+
+          /* Glassmorphism professional look */
+          background: "rgba(255,255,255,0.95)",
+          backdropFilter: "blur(12px)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
+        }}
+      >
+        {/* Header */}
+        <Typography variant="h5" fontWeight="bold">
+          Public Works Department
+        </Typography>
+
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
+          Government of Goa • NRW Monitoring System
+        </Typography>
+
+        {/* Email */}
+        <TextField
+          fullWidth
+          label="Official Email"
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Email />
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Password */}
+        <TextField
+          fullWidth
+          label="Password"
+          type={showPass ? "text" : "password"}
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Lock />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPass(!showPass)}>
+                  {showPass ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Professional Button (full width) */}
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleLogin}
           sx={{
-            p: 6,
-            borderRadius: 5,
-            backdropFilter: "blur(10px)",
-            background: "rgba(255,255,255,0.95)",
-            transition: "0.3s",
+            mt: 4,
+            height: 48,
+            borderRadius: 2,
+            fontWeight: "bold",
+            fontSize: "15px",
+            textTransform: "none",
+            bgcolor: "#0b5ed7",
             "&:hover": {
-              transform: "translateY(-4px)"
+              bgcolor: "#084298"
             }
           }}
         >
-          {/* Title */}
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            color="primary"
-            gutterBottom
-            textAlign="center"
-          >
-            💧 Public Works Department
-          </Typography>
+          Secure Login
+        </Button>
 
-          <Typography
-            variant="subtitle1"
-            textAlign="center"
-            sx={{ mb: 4, opacity: 0.8 }}
-          >
-            Drinking Water – NRW Management System
-          </Typography>
-
-          {/* Email */}
-          <TextField
-            fullWidth
-            label="Email Address"
-            variant="outlined"
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email color="primary" />
-                </InputAdornment>
-              )
-            }}
-          />
-
-          {/* Password */}
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPass ? "text" : "password"}
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock color="primary" />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass(!showPass)}>
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
-
-          {/* Login Button */}
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{
-              mt: 4,
-              py: 1.6,
-              fontWeight: "bold",
-              fontSize: "16px",
-              borderRadius: 3,
-              textTransform: "none",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.2)"
-            }}
-            onClick={handleLogin}
-          >
-            Login Securely
-          </Button>
-        </Paper>
-      </Container>
+        {/* Footer text */}
+        <Typography
+          variant="caption"
+          sx={{ display: "block", mt: 3, textAlign: "center", color: "gray" }}
+        >
+          Authorized personnel only
+        </Typography>
+      </Paper>
     </Box>
   );
 }
