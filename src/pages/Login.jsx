@@ -1,18 +1,18 @@
 import {
   Button,
   TextField,
-  Container,
   Typography,
   Paper,
   Box,
   InputAdornment,
   IconButton
 } from "@mui/material";
-import { auth } from "../firebase";
-console.log("Firebase Auth:", auth);
+
 import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import bg from "../assets/bg-water.jpg"; 
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,191 +29,147 @@ export default function Login() {
     }
   };
 
-return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: '#F8FAFC' }}>
-      <Grid container>
-        
-        {/* LEFT SIDE: BRANDING & ANALYTICS VISUAL */}
-        <Grid
-          item
-          xs={false}
-          sm={4}
-          md={7}
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 4
+      }}
+    >
+      {/* LEFT PANEL */}
+      <Box
+        sx={{
+          display: { xs: "none", md: "block" },
+          mr: 6,
+          p: 3,
+          width: 260,
+          bgcolor: "rgba(255,255,255,0.75)",
+          borderRadius: 4,
+          backdropFilter: "blur(6px)"
+        }}
+      >
+        <Typography fontWeight="bold" gutterBottom>
+          WATER SAVING HEROES
+        </Typography>
+
+        <Typography variant="body2">✔ Fix Leaks</Typography>
+        <Typography variant="body2">✔ Shorter Showers</Typography>
+        <Typography variant="body2">✔ Efficient Gardening</Typography>
+      </Box>
+
+      {/* LOGIN CARD */}
+      <Paper
+        elevation={10}
+        sx={{
+          width: 420,
+          p: 5,
+          borderRadius: 5,
+          textAlign: "center",
+          background: "rgba(255,255,255,0.75)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.25)"
+        }}
+      >
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Public Works Department
+        </Typography>
+
+        <Typography variant="body2" sx={{ mb: 4 }}>
+          Drinking Water – NRW Management System
+        </Typography>
+
+        {/* Email */}
+        <TextField
+          fullWidth
+          label="Email"
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Email />
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Password */}
+        <TextField
+          fullWidth
+          label="Password"
+          type={showPass ? "text" : "password"}
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Lock />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPass(!showPass)}>
+                  {showPass ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Circular Login Button */}
+        <Button
+          onClick={handleLogin}
           sx={{
-            position: 'relative',
-            background: `linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.9) 100%), 
-                        url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'white',
-            p: 6,
+            mt: 4,
+            width: 90,
+            height: 90,
+            borderRadius: "50%",
+            fontWeight: "bold",
+            bgcolor: "#1976d2",
+            color: "#fff",
+            "&:hover": {
+              bgcolor: "#0d47a1",
+              transform: "scale(1.05)"
+            }
           }}
         >
-          {/* Decorative Flow Elements */}
-          <Box sx={{ position: 'absolute', top: 40, left: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <WaterDrop sx={{ color: '#0ea5e9', fontSize: 32 }} />
-            <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 1 }}>
-              PWD WATER TECH
-            </Typography>
-          </Box>
+          LOGIN
+        </Button>
+      </Paper>
 
-          <Box sx={{ maxWidth: 600, textAlign: 'left', zIndex: 1 }}>
-            <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, lineHeight: 1.2 }}>
-              Precision <br />
-              <span style={{ color: '#38bdf8' }}>NRW Management</span>
-            </Typography>
-            <Typography variant="h6" sx={{ color: '#94a3b8', mb: 4, fontWeight: 400 }}>
-              Empowering government engineers with real-time hydraulic analytics and leak detection across all city zones.
-            </Typography>
+      {/* RIGHT PANEL */}
+      <Box
+        sx={{
+          display: { xs: "none", md: "block" },
+          ml: 6,
+          p: 3,
+          width: 260,
+          bgcolor: "rgba(255,255,255,0.75)",
+          borderRadius: 4,
+          backdropFilter: "blur(6px)",
+          textAlign: "center"
+        }}
+      >
+        <Typography fontWeight="bold" gutterBottom>
+          OUR IMPACT
+        </Typography>
 
-            {/* Glassmorphism Metric Cards (Visual Only) */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {[
-                { label: 'Network Health', val: '98.2%', icon: <Shield fontSize="small" /> },
-                { label: 'Active Sensors', val: '14,204', icon: <Analytics fontSize="small" /> }
-              ].map((stat, i) => (
-                <Box key={i} sx={{ 
-                  p: 2, 
-                  bgcolor: 'rgba(255,255,255,0.05)', 
-                  backdropFilter: 'blur(10px)', 
-                  borderRadius: 3,
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  minWidth: 160
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#38bdf8', mb: 0.5 }}>
-                    {stat.icon}
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>{stat.label}</Typography>
-                  </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>{stat.val}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        </Grid>
+        <Typography variant="body2">
+          Together, we save water!
+        </Typography>
 
-        {/* RIGHT SIDE: LOGIN FORM */}
-        <Grid item xs={12} sm={8} md={5} component={Box} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-          <Container maxWidth="xs">
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <IconButton sx={{ bgcolor: '#eff6ff', mb: 2, p: 2 }}>
-                <DarkModeOutlined sx={{ color: '#3b82f6' }} />
-              </IconButton>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b', mb: 1 }}>
-                Secure Login
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#64748b' }}>
-                NRW Monitoring & Analytics System <br />
-                <strong>Public Works Department</strong>
-              </Typography>
-            </Box>
-
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
-              <Box component="form" noValidate>
-                {/* Role Selector */}
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                  Select Access Level
-                </Typography>
-                <ToggleButtonGroup
-                  value={role}
-                  exclusive
-                  onChange={handleRole}
-                  fullWidth
-                  sx={{ mb: 3, '& .MuiToggleButton-root': { py: 1, borderRadius: '8px !important', border: '1px solid #e2e8f0', mx: 0.5 } }}
-                >
-                  <ToggleButton value="admin" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>Admin</ToggleButton>
-                  <ToggleButton value="engineer" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>Engineer</ToggleButton>
-                  <ToggleButton value="field" sx={{ fontSize: '0.75rem', fontWeight: 600 }}>Field Staff</ToggleButton>
-                </ToggleButtonGroup>
-
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  variant="outlined"
-                  margin="normal"
-                  placeholder="name@government.gov"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailOutlined sx={{ color: '#94a3b8' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                />
-
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  variant="outlined"
-                  margin="normal"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockOutlined sx={{ color: '#94a3b8' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleClickShowPassword} edge="end">
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 }, mb: 1 }}
-                />
-
-                <Box sx={{ textAlign: 'right', mb: 3 }}>
-                  <Button variant="text" sx={{ textTransform: 'none', color: '#3b82f6', fontWeight: 600 }}>
-                    Forgot password?
-                  </Button>
-                </Box>
-
-                <Button
-                  fullWidth
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    py: 1.8,
-                    borderRadius: 3,
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    background: 'linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%)',
-                    boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 20px 25px -5px rgba(37, 99, 235, 0.4)',
-                    }
-                  }}
-                >
-                  Secure Login
-                </Button>
-              </Box>
-            </Paper>
-
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
-              <Divider sx={{ mb: 3 }}>
-                <Typography variant="caption" sx={{ color: '#94a3b8', px: 1 }}>
-                  Official Access Only
-                </Typography>
-              </Divider>
-              <Typography variant="caption" sx={{ color: '#cbd5e1' }}>
-                © 2026 Water Department Infrastructure Division. <br />
-                All activities are logged and monitored.
-              </Typography>
-            </Box>
-          </Container>
-        </Grid>
-      </Grid>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Community Goal – 10% usage reduction
+        </Typography>
+      </Box>
     </Box>
   );
-};
-
-export default NRWLogin;
+}
