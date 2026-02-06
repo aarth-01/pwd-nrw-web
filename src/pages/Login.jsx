@@ -64,6 +64,15 @@ export default function Login() {
             textAlign: "center"
           }}
         >
+            {/* ✅ LOGO ABOVE TITLE */}
+          <Box sx={{ mb: 2 }}>
+            <img
+              src={logo}
+              alt="VDASS AquaTrack Logo"
+              style={{ width: 160 }}
+            />
+          </Box>
+
           
           <Typography variant="h5" color="primary" gutterBottom>
             Public Works Department
