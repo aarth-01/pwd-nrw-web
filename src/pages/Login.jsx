@@ -1,93 +1,53 @@
-import {
-  Button,
-  TextField,
-  Typography,
-  Paper,
-  Box,
-  InputAdornment,
-  IconButton
-} from "@mui/material";
+return (
+  <Box
+    sx={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
 
-import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import bg from "../assets/backg-water.jpg"; 
-
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-
-  const navigate = useNavigate();
-
-  const handleLogin = () => {
-    if (email === "viraj.patil@pwd.gov.in") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/engineer/leakage-form");
-    }
-  };
-
-  return (
+      /* ✅ KEEP original water background */
+      backgroundImage: `
+        linear-gradient(rgba(0,60,90,0.6), rgba(0,60,90,0.6)),
+        url(${require("../assets/backg-water.jpg")})
+      `,
+      backgroundSize: "cover",
+      backgroundPosition: "center"
+    }}
+  >
+    {/* MAIN CONTAINER */}
     <Box
       sx={{
-        minHeight: "100vh",
-        backgroundImage: `url(${bg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        px: 4
+        gap: 0,
+        borderRadius: 4,
+        overflow: "hidden",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.4)"
       }}
     >
-      {/* LEFT PANEL */}
-      <Box
-        sx={{
-          display: { xs: "none", md: "block" },
-          mr: 6,
-          p: 3,
-          width: 260,
-          bgcolor: "rgba(255,255,255,0.75)",
-          borderRadius: 4,
-          backdropFilter: "blur(6px)"
-        }}
-      >
-        <Typography fontWeight="bold" gutterBottom>
-          WATER SAVING HEROES
-        </Typography>
-
-        <Typography variant="body2">✔ Fix Leaks</Typography>
-        <Typography variant="body2">✔ Shorter Showers</Typography>
-        <Typography variant="body2">✔ Efficient Gardening</Typography>
-      </Box>
-
-      {/* LOGIN CARD */}
+      {/* ================= LEFT : LOGIN ================= */}
       <Paper
-        elevation={10}
+        elevation={0}
         sx={{
           width: 420,
           p: 5,
-          borderRadius: 5,
-          textAlign: "center",
-          background: "rgba(255,255,255,0.75)",
-          backdropFilter: "blur(10px)",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.25)"
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          background: "rgba(255,255,255,0.95)"
         }}
       >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
+        <Typography variant="h5" fontWeight="bold">
           Public Works Department
         </Typography>
 
-        <Typography variant="body2" sx={{ mb: 4 }}>
-          Drinking Water – NRW Management System
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
+          Government of Goa • NRW Monitoring System
         </Typography>
 
-        {/* Email */}
         <TextField
           fullWidth
-          label="Email"
+          label="Official Email"
           margin="normal"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -100,7 +60,6 @@ export default function Login() {
           }}
         />
 
-        {/* Password */}
         <TextField
           fullWidth
           label="Password"
@@ -124,52 +83,40 @@ export default function Login() {
           }}
         />
 
-        {/* Circular Login Button */}
         <Button
+          fullWidth
+          variant="contained"
           onClick={handleLogin}
           sx={{
             mt: 4,
-            width: 90,
-            height: 90,
-            borderRadius: "50%",
+            height: 48,
+            borderRadius: 2,
             fontWeight: "bold",
-            bgcolor: "#1976d2",
-            color: "#fff",
-            "&:hover": {
-              bgcolor: "#0d47a1",
-              transform: "scale(1.05)"
-            }
+            textTransform: "none",
+            bgcolor: "#0b5ed7",
+            "&:hover": { bgcolor: "#084298" }
           }}
         >
-          LOGIN
+          Secure Login
         </Button>
+
+        <Typography
+          variant="caption"
+          sx={{ mt: 3, textAlign: "center", color: "gray" }}
+        >
+          Authorized personnel only
+        </Typography>
       </Paper>
 
-      {/* RIGHT PANEL */}
+      {/* ================= RIGHT : IMAGE ================= */}
       <Box
         sx={{
-          display: { xs: "none", md: "block" },
-          ml: 6,
-          p: 3,
-          width: 260,
-          bgcolor: "rgba(255,255,255,0.75)",
-          borderRadius: 4,
-          backdropFilter: "blur(6px)",
-          textAlign: "center"
+          width: 420,                 // same width as login
+          backgroundImage: `url(${sideImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center"
         }}
-      >
-        <Typography fontWeight="bold" gutterBottom>
-          OUR IMPACT
-        </Typography>
-
-        <Typography variant="body2">
-          Together, we save water!
-        </Typography>
-
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Community Goal – 10% usage reduction
-        </Typography>
-      </Box>
+      />
     </Box>
-  );
-}
+  </Box>
+);
