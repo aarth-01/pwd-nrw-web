@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import bg from "../assets/backg-water.jpg";
 import sideImage from "../assets/front-image.jpg";
+import logo from "../assets/logo.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -63,6 +64,7 @@ export default function Login() {
             textAlign: "center"
           }}
         >
+          
           <Typography variant="h5" color="primary" gutterBottom>
             Public Works Department
           </Typography>
