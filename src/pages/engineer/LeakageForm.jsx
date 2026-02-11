@@ -7,7 +7,7 @@ import {
   Box,
   Paper
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import bg from "../../assets/bg-front.jpg";
@@ -15,6 +15,10 @@ import bg from "../../assets/bg-front.jpg";
 export default function LeakageForm() {
   const navigate = useNavigate();
   const locationData = useLocation();
+
+  const selectedLocation = locationData.state?.location || null;//new change
+
+  const [address, setAddress] = useState("");
 
   const [formData, setFormData] = useState({
     constituency: "",
@@ -32,8 +36,26 @@ export default function LeakageForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    if (!selectedLocation) return;
+
+    const fetchAddress = async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLocation.lat}&lon=${selectedLocation.lng}`
+        );
+        const data = await res.json();
+        setAddress(data.display_name);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchAddress();
+  }, [selectedLocation]);
+
   const handleSubmit = () => {
-    const geoLocation = locationData.state?.location || null;
+    const geoLocation = selectedLocation;//new change
 
     const totalMinutes =
       Number(formData.days) * 1440 +
@@ -99,6 +121,13 @@ export default function LeakageForm() {
             >
               LEAKAGE ENTRY FORM
             </Typography>
+            
+            {/* ✅ ADDED: show selected location */}
+            {selectedLocation && (
+              <Typography color="green" sx={{ mb: 2 }}>  
+                📍 {address || "Fetching address..."} 
+              </Typography>
+            )}
 
             <TextField select fullWidth label="Constituency" name="constituency" margin="normal" onChange={handleChange}>
               <MenuItem value="Margao">Margao</MenuItem>
@@ -124,15 +153,22 @@ export default function LeakageForm() {
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField fullWidth label="Days" name="days" margin="normal" onChange={handleChange} />
               <TextField fullWidth label="Hours" name="hours" margin="normal" onChange={handleChange} />
-              <TextField fullWidth label="Minutes" name="minutes" margin="normal" onChange={handleChange} />
             </Box>
 
             <TextField fullWidth label="Litres per minute (LPM)" name="pipeSize" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Water Pressure" name="pressure" margin="normal" onChange={handleChange} />
+            <TextField fullWidth label="Diameter" name="diameter" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Plumber / Meter Reader Name" name="plumberName" margin="normal" onChange={handleChange} />
 
             <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-              <Button fullWidth variant="outlined" sx={{ borderRadius: 2 }}>
+              
+              {/* ✅ ADDED onClick */}
+              <Button
+                fullWidth
+                variant="outlined"
+                sx={{ borderRadius: 2 }}
+                onClick={() => navigate("/engineer/map")} //new change
+              >
                 Mark Location on Map
               </Button>
 

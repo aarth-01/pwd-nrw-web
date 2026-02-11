@@ -136,7 +136,22 @@ export default function Summary() {
             </Card>
           </Grid>
         </Grid>
+        {/* CHARTS */}
+        <Grid container spacing={4} sx={{ mt: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Constituency-wise Water Loss
+            </Typography>
+            <Bar data={barChartData} />
+          </Grid>
 
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>
+              Water Loss Trend (This Month)
+            </Typography>
+            <Line data={lineChartData} />
+          </Grid>
+        </Grid>
         {/* CONSTITUENCY TABLE */}
         <Typography variant="h6" gutterBottom>
           Constituency-wise Summary (Current Month)
@@ -161,22 +176,7 @@ export default function Summary() {
           </TableBody>
         </Table>
 
-        {/* CHARTS */}
-        <Grid container spacing={4} sx={{ mt: 4 }}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Constituency-wise Water Loss
-            </Typography>
-            <Bar data={barChartData} />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Water Loss Trend (This Month)
-            </Typography>
-            <Line data={lineChartData} />
-          </Grid>
-        </Grid>
+        
       </Container>
     </>
   );

@@ -6,6 +6,11 @@ import {
   Box
 } from "@mui/material";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
+
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,13 +24,39 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (email === "viraj.patil@pwd.gov.in") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/engineer/leakage-form");
+  const handleLogin = async () => {
+    try {
+      //  Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const uid = userCredential.user.uid;
+
+      // Get role from Firestore
+      const userDoc = await getDoc(doc(db, "users", uid));
+
+      if (!userDoc.exists()) {
+        alert("User role not configured.");
+        return;
+      }
+
+      const role = userDoc.data().role;
+
+      //  Redirect based on role
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/engineer/leakage-form");
+      }
+
+    } catch (error) {
+      alert(error.message);
     }
   };
+
 
   return (
     <Box

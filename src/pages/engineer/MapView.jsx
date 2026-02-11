@@ -1,11 +1,12 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import { useState } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import { useState, useRef, useEffect } from "react";
 import {
   Container,
   Typography,
   Button,
   Box,
-  Paper
+  Paper,
+  TextField
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -23,6 +24,19 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+function RecenterMap({ position }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, 15); // smooth animation
+    }
+  }, [position, map]);
+
+  return null;
+}
+
+
 function LocationMarker({ setPosition }) {
   useMapEvents({
     click(e) {
@@ -34,12 +48,36 @@ function LocationMarker({ setPosition }) {
 
 export default function MapView() {
   const [position, setPosition] = useState(null);
+  const [search, setSearch] = useState("");
+  const mapRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleConfirm = () => {
+  const handleConfirm = () => { //new change
+    if (!position) return;
     navigate("/engineer/leakage-form", {
       state: { location: position },
     });
+  };
+
+   const handleSearch = async () => {
+    if (!search) return;
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${search}`
+      );
+      const data = await res.json();
+
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        setPosition({ lat, lng: lon });
+
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -91,6 +129,19 @@ export default function MapView() {
               Mark Leakage Location
             </Typography>
 
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search location (e.g. Margao, Goa)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Button variant="outlined" onClick={handleSearch}>
+                Search
+              </Button>
+            </Box>
+
             {/* ===== MAP ===== */}
             <Box
               sx={{
@@ -103,12 +154,14 @@ export default function MapView() {
                 center={[15.2993, 74.124]}
                 zoom={12}
                 style={{ height: "420px", width: "100%" }}
+                whenCreated={(map) => (mapRef.current = map)}
               >
                 <TileLayer
                   attribution="© OpenStreetMap contributors"
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <LocationMarker setPosition={setPosition} />
+                <RecenterMap position={position} />
                 {position && <Marker position={position} />}
               </MapContainer>
             </Box>
