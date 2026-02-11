@@ -6,6 +6,9 @@ import {
   Stack,
   Paper
 } from "@mui/material";
+import { auth, db } from "../firebase";
+console.log(auth, db);
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

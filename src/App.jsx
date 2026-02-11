@@ -16,7 +16,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-
+        
         {/* Common */}
         <Route path="/" element={<Login />} />
 

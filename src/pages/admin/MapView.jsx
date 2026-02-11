@@ -37,6 +37,7 @@ export default function AdminMapView() {
     return constituencyMatch && dateMatch;
   });
 
+
   return (
     <>
       <Navbar role="admin" />
