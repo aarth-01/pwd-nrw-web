@@ -12,7 +12,7 @@ export default function Navbar({ role }) {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          PWD – Drinking Water NRW System
+          DDW-NRW : Real Losses
         </Typography>
 
         {role === "admin" && (

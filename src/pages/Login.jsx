@@ -1,21 +1,22 @@
 import {
   Button,
   TextField,
+  Container,
   Typography,
-  Box,
-  Stack,
-  Paper
+  Box
 } from "@mui/material";
-import { auth, db } from "../firebase";
-console.log(auth, db);
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import bg from "../assets/bg-front.jpg";
+import sideImage from "../assets/front-image .jpg";
+import logo from "../assets/logo.jpg";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState(["", "", "", ""]);
+
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -26,58 +27,62 @@ export default function Login() {
     }
   };
 
-  const handleOtpChange = (value, index) => {
-    if (!/^\d?$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-  };
-
   return (
     <Box
       sx={{
-        height: "100vh",
-        width: "100vw",
-        background: "linear-gradient(135deg, #081b3a, #0b6fa3)",
+        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+
+        /* water background */
+        backgroundImage: `
+          linear-gradient(rgba(0,90,130,0.35), rgba(0,90,130,0.35)),
+          url(${bg})
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center"
       }}
     >
-      {/* Glass Effect */}
+      {/* simple row layout */}
       <Box
         sx={{
-          width: 420,
-          p: 4,
-          borderRadius: 4,
-          background: "rgba(255,255,255,0.12)",
-          backdropFilter: "blur(14px)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-          textAlign: "center"
+          display: "flex",
+          bgcolor: "white",
+          width: { xs: "95%", md: 950 },
+          borderRadius: 2,
+          overflow: "hidden",
+          boxShadow: 8,
+          flexDirection: { xs: "column", md: "row" }
         }}
       >
-        <Typography
-          variant="subtitle2"
-          sx={{ color: "#bde9ff", mb: 1 }}
-        >
-          Government of Goa · Smart Water
-        </Typography>
-
-        <Typography
-          variant="h6"
-          sx={{ color: "#ffffff", mb: 3 }}
-        >
-          Smart Water Analytics and NRW Intelligence
-        </Typography>
-
-        <Paper
-          elevation={0}
+        {/* ================= LOGIN (same style as your original) ================= */}
+        <Container
           sx={{
-            p: 3,
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.92)"
+            flex: 1.2,
+            py: 7,
+            px: 6,
+            textAlign: "center"
           }}
         >
+
+          <Box
+            component="img"
+            src={logo}
+            alt="PWD Logo"
+            sx={{
+              width: { xs: 180, md: 240 }, // bigger
+              height: "auto",
+              mb: 2,
+              mx: "auto",
+              display: "block"
+            }}
+          />
+
+          <Typography variant="h5" fontWeight="bold" color="primary">
+            NRW Real Loss Management System
+          </Typography>
+
           <TextField
             fullWidth
             label="Email"
@@ -95,53 +100,28 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Stack
-            direction="row"
-            spacing={1.5}
-            justifyContent="center"
-            sx={{ my: 2 }}
-          >
-            {otp.map((digit, index) => (
-              <TextField
-                key={index}
-                value={digit}
-                onChange={(e) =>
-                  handleOtpChange(e.target.value, index)
-                }
-                inputProps={{
-                  maxLength: 1,
-                  style: { textAlign: "center", fontSize: 18 }
-                }}
-                sx={{ width: 55 }}
-              />
-            ))}
-          </Stack>
-
           <Button
             fullWidth
             variant="contained"
-            sx={{
-              mt: 2,
-              py: 1.2,
-              borderRadius: 6,
-              background:
-                "linear-gradient(135deg, #00c6ff, #0072ff)"
-            }}
+            size="large"
+            sx={{ mt: 3, py: 1.3 }}
             onClick={handleLogin}
           >
-            LOGIN SECURELY
+            LOGIN
           </Button>
-        </Paper>
+        </Container>
 
-        <Typography
-          variant="caption"
-          sx={{ color: "#dbeafe", mt: 2, display: "block" }}
-        >
-          PWD · Government of Goa
-        </Typography>
+        {/* ================= RIGHT IMAGE ================= */}
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: { xs: 260, md: 520 },
+            backgroundImage: `url(${sideImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
+        />
       </Box>
     </Box>
   );
 }
-
-
