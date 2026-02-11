@@ -7,6 +7,11 @@ import {
   Box,
   Paper
 } from "@mui/material";
+
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../../firebase";
+
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -54,24 +59,54 @@ export default function LeakageForm() {
     fetchAddress();
   }, [selectedLocation]);
 
-  const handleSubmit = () => {
-    const geoLocation = selectedLocation;//new change
+  const handleSubmit = async () => {
+    try {
+      // Build location object including address
+      const geoLocation = selectedLocation
+        ? {
+            lat: selectedLocation.lat,
+            lng: selectedLocation.lng,
+            address: address || "",
+          }
+        : null;
 
-    const totalMinutes =
-      Number(formData.days) * 1440 +
-      Number(formData.hours) * 60 +
-      Number(formData.minutes);
+      // Calculate duration (days + hours only)
+      const totalMinutes =
+        Number(formData.days || 0) * 1440 +
+        Number(formData.hours || 0) * 60;
 
-    const estimatedLoss = totalMinutes * 50;
+      // Water loss calculation using LPM
+      const estimatedLoss =
+        Number(formData.lpm || 0) * totalMinutes;
 
-    navigate("/engineer/success", {
-      state: {
-        loss: estimatedLoss,
-        minutes: totalMinutes,
+      // Save to Firestore
+      await addDoc(collection(db, "leakages"), {
+        constituency: formData.constituency,
+        leakageType: formData.leakageType,
+        pipelineType: formData.pipelineType,
+        durationMinutes: totalMinutes,
+        lpm: Number(formData.lpm || 0),
+        pressure: formData.pressure,
+        diameter: formData.diameter,
+        plumberName: formData.plumberName || "Aarth Vajandar",
         location: geoLocation,
-      },
-    });
+        waterLoss: estimatedLoss,
+        timestamp: serverTimestamp(),
+      });
+
+      navigate("/engineer/success", {
+        state: {
+          loss: estimatedLoss,
+          minutes: totalMinutes,
+          location: geoLocation,
+        },
+      });
+
+    } catch (error) {
+      alert("Error saving data: " + error.message);
+    }
   };
+
 
   return (
     <>
@@ -155,7 +190,7 @@ export default function LeakageForm() {
               <TextField fullWidth label="Hours" name="hours" margin="normal" onChange={handleChange} />
             </Box>
 
-            <TextField fullWidth label="Litres per minute (LPM)" name="pipeSize" margin="normal" onChange={handleChange} />
+            <TextField fullWidth label="Litres per minute (LPM)" name="lpm" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Water Pressure" name="pressure" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Diameter" name="diameter" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Plumber / Meter Reader Name" name="plumberName" margin="normal" onChange={handleChange} />
