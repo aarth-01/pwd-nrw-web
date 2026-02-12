@@ -9,9 +9,14 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Box,
 } from "@mui/material";
 import Navbar from "../../components/Navbar";
-import { mockLeakages } from "../../data/mockLeakages";
+import bg from "../../assets/LBB.jpg";
+
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
+import { useEffect, useState } from "react";
 
 import {
   Chart as ChartJS,
@@ -25,7 +30,6 @@ import {
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 
-// Register chart components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -36,65 +40,79 @@ ChartJS.register(
   Legend
 );
 
-// Helper functions
-const getMonth = (dateStr) => new Date(dateStr).getMonth();
-const activeMonth = Math.max(
-  ...mockLeakages.map((item) => getMonth(item.date))
-);
-
-
 export default function Summary() {
-  /* ---------------- CURRENT MONTH DATA ---------------- */
-  const monthlyData = mockLeakages.filter(
-    (item) => getMonth(item.date) === activeMonth
-  );
+  const [leakages, setLeakages] = useState([]);
+
+  useEffect(() => {
+    const fetchLeakages = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "leakages"));
+
+        const data = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setLeakages(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchLeakages();
+  }, []);
+
+  const currentMonth = new Date().getMonth();
+
+  const monthlyData = leakages.filter(item => {
+    const date = item.timestamp?.toDate?.();
+    return date && date.getMonth() === currentMonth;
+  });
 
   const totalMonthlyLoss = monthlyData.reduce(
-    (sum, item) => sum + item.waterLoss,
+    (sum, item) => sum + (item.waterLoss || 0),
     0
   );
 
-  /* ---------------- CONSTITUENCY AGGREGATION ---------------- */
   const constituencySummary = {};
 
-  monthlyData.forEach((item) => {
+  monthlyData.forEach(item => {
     if (!constituencySummary[item.constituency]) {
       constituencySummary[item.constituency] = {
         count: 0,
         loss: 0,
       };
     }
+
     constituencySummary[item.constituency].count += 1;
-    constituencySummary[item.constituency].loss += item.waterLoss;
+    constituencySummary[item.constituency].loss += item.waterLoss || 0;
   });
 
-  /* ---------------- BAR CHART DATA ---------------- */
   const barChartData = {
     labels: Object.keys(constituencySummary),
     datasets: [
       {
         label: "Water Loss (litres)",
-        data: Object.values(constituencySummary).map(
-          (item) => item.loss
-        ),
+        data: Object.values(constituencySummary).map(i => i.loss),
         backgroundColor: "#1976d2",
       },
     ],
   };
 
-  /* ---------------- LINE CHART DATA ---------------- */
   const sortedByDate = [...monthlyData].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
+    (a, b) =>
+      a.timestamp.toDate() - b.timestamp.toDate()
   );
 
   const lineChartData = {
-    labels: sortedByDate.map((item) => item.date),
+    labels: sortedByDate.map(i =>
+      i.timestamp.toDate().toLocaleDateString()
+    ),
     datasets: [
       {
-        label: "Daily Water Loss (litres)",
-        data: sortedByDate.map((item) => item.waterLoss),
+        label: "Daily Water Loss",
+        data: sortedByDate.map(i => i.waterLoss),
         borderColor: "#0d47a1",
-        backgroundColor: "#0d47a1",
         fill: false,
       },
     ],
@@ -103,81 +121,84 @@ export default function Summary() {
   return (
     <>
       <Navbar role="admin" />
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Weekly / Monthly NRW Summary
-        </Typography>
 
-        {/* KPI CARDS */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Typography color="text.secondary">
-                  Total Water Loss (This Month)
-                </Typography>
-                <Typography variant="h6">
-                  {totalMonthlyLoss} litres
-                </Typography>
-              </CardContent>
-            </Card>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          backgroundImage: `url(${bg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          py: 4,
+        }}
+      >
+        <Container maxWidth="xl">
+          <Typography variant="h4" fontWeight="bold">
+            Weekly / Monthly NRW Summary
+          </Typography>
+
+          <Grid container spacing={4}>
+            {/* LEFT SIDE */}
+            <Grid item xs={12} md={5}>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography>Total Water Loss</Typography>
+                      <Typography variant="h5">
+                        {totalMonthlyLoss} litres
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography>Total Leakages</Typography>
+                      <Typography variant="h5">
+                        {monthlyData.length}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+
+              <Table sx={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><b>Constituency</b></TableCell>
+                    <TableCell><b>No. of Leakages</b></TableCell>
+                    <TableCell><b>Total Water Lost</b></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {Object.keys(constituencySummary).map(key => (
+                    <TableRow key={key}>
+                      <TableCell>{key}</TableCell>
+                      <TableCell>{constituencySummary[key].count}</TableCell>
+                      <TableCell>{constituencySummary[key].loss}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Grid>
+
+            {/* RIGHT SIDE */}
+            <Grid item xs={12} md={7}>
+              <Box sx={{ bgcolor: "white", p: 3, borderRadius: 3, mb: 3 }}>
+                <Typography>Constituency-wise Loss</Typography>
+                <Bar data={barChartData} />
+              </Box>
+
+              <Box sx={{ bgcolor: "white", p: 3, borderRadius: 3 }}>
+                <Typography>Water Loss Trend</Typography>
+                <Line data={lineChartData} />
+              </Box>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Typography color="text.secondary">
-                  Total Leakages
-                </Typography>
-                <Typography variant="h6">
-                  {monthlyData.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-        {/* CHARTS */}
-        <Grid container spacing={4} sx={{ mt: 4 }}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Constituency-wise Water Loss
-            </Typography>
-            <Bar data={barChartData} />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Water Loss Trend (This Month)
-            </Typography>
-            <Line data={lineChartData} />
-          </Grid>
-        </Grid>
-        {/* CONSTITUENCY TABLE */}
-        <Typography variant="h6" gutterBottom>
-          Constituency-wise Summary (Current Month)
-        </Typography>
-
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Constituency</TableCell>
-              <TableCell>No. of Leakages</TableCell>
-              <TableCell>Total Water Lost (litres)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.keys(constituencySummary).map((key) => (
-              <TableRow key={key}>
-                <TableCell>{key}</TableCell>
-                <TableCell>{constituencySummary[key].count}</TableCell>
-                <TableCell>{constituencySummary[key].loss}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        
-      </Container>
+        </Container>
+      </Box>
     </>
   );
 }
