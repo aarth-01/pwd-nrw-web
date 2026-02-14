@@ -148,7 +148,7 @@ export default function Summary() {
           py: 4,
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="lg">
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Weekly / Monthly NRW Summary
           </Typography>

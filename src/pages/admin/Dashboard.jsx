@@ -106,14 +106,15 @@ export default function Dashboard() {
           py: 4,
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="lg">
           <Typography variant="h4" fontWeight="bold" mb={3}>
             PWD Admin Dashboard
           </Typography>
 
           {/* ===== TOP KPI ROW (ALL 6 CARDS) ===== */}
           <Grid container spacing={2}>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
+
               <Card>
                 <CardContent>
                   <Typography>Total Water Loss</Typography>
@@ -124,7 +125,8 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
+
               <Card>
                 <CardContent>
                   <Typography>Total Leakages</Typography>
@@ -135,7 +137,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <Card>
                 <CardContent>
                   <Typography>Avg Response</Typography>
@@ -149,7 +151,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <Card>
                 <CardContent>
                   <Typography>Today's Leakages</Typography>
@@ -160,7 +162,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <Card>
                 <CardContent>
                   <Typography>Status Indicator</Typography>
@@ -171,7 +173,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={4} lg={2}>
               <Card>
                 <CardContent>
                   <Typography>Highest Loss Area</Typography>
