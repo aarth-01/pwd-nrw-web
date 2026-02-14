@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import {
   Container,
   Typography,
@@ -7,6 +7,7 @@ import {
   Grid,
   Paper,
   Box,
+  Button,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
@@ -15,7 +16,8 @@ import { db } from "../../firebase";
 import L from "leaflet";
 import bg from "../../assets/LBB.jpg";
 
-// Fix marker icon issue
+
+// ✅ Fix marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -26,10 +28,34 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+
+/* =====================================================
+   ⭐ Helper → Only moves map (NO marker)
+===================================================== */
+function RecenterMap({ position }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, 14); // smooth zoom
+    }
+  }, [position, map]);
+
+  return null;
+}
+
+
+
 export default function AdminMapView() {
   const [selectedConstituency, setSelectedConstituency] = useState("All");
   const [selectedDate, setSelectedDate] = useState("");
   const [leakages, setLeakages] = useState([]);
+
+  // ⭐ NEW: search state
+  const [search, setSearch] = useState("");
+  const [searchPosition, setSearchPosition] = useState(null);
+
+
 
   /* 🔥 Fetch Firestore Data */
   useEffect(() => {
@@ -51,6 +77,8 @@ export default function AdminMapView() {
     fetchLeakages();
   }, []);
 
+
+
   /* 🔍 Filtering Logic */
   const filteredLeakages = leakages.filter((item) => {
     const constituencyMatch =
@@ -65,6 +93,32 @@ export default function AdminMapView() {
 
     return constituencyMatch && dateMatch;
   });
+
+
+
+  /* ⭐ NEW: Search function (NO MARKER) */
+  const handleSearch = async () => {
+    if (!search) return;
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${search}`
+      );
+
+      const data = await res.json();
+
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        setSearchPosition([lat, lon]); // only move map
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
 
   return (
     <>
@@ -81,6 +135,7 @@ export default function AdminMapView() {
         }}
       >
         <Container maxWidth="lg">
+
           {/* Title */}
           <Paper
             elevation={3}
@@ -95,6 +150,8 @@ export default function AdminMapView() {
               Leakage Locations – Constituency View
             </Typography>
           </Paper>
+
+
 
           {/* Filters */}
           <Paper
@@ -139,6 +196,34 @@ export default function AdminMapView() {
             </Grid>
           </Paper>
 
+
+
+          {/* ⭐ NEW: Search Bar */}
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2,
+              mb: 3,
+              borderRadius: 3,
+              backgroundColor: "rgba(255,255,255,0.95)",
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search location (e.g. Margao, Goa)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Button variant="outlined" onClick={handleSearch}>
+                Search
+              </Button>
+            </Box>
+          </Paper>
+
+
+
           {/* Map */}
           <Paper elevation={3} sx={{ borderRadius: 3, overflow: "hidden" }}>
             <MapContainer
@@ -151,6 +236,10 @@ export default function AdminMapView() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
+              {/* ⭐ Only fly to searched place */}
+              <RecenterMap position={searchPosition} />
+
+              {/* Existing leakage markers (unchanged) */}
               {filteredLeakages.map((item) => (
                 <Marker
                   key={item.id}
