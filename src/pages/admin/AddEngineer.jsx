@@ -12,7 +12,12 @@ import {
   TableCell,
   TableBody,
   Paper,
+  Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 import Navbar from "../../components/Navbar";
@@ -20,20 +25,54 @@ import bg from "../../assets/LBB.jpg";
 
 export default function AddEngineer() {
   const [showForm, setShowForm] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+
   const [engineers, setEngineers] = useState([
     { id: 1, name: "Ravi Naik", email: "ravi@gmail.com", constituency: "Margao" },
     { id: 2, name: "Suresh Patil", email: "suresh@gmail.com", constituency: "Fatorda" },
     { id: 3, name: "Anita Dessai", email: "anita@gmail.com", constituency: "Benaulim" },
   ]);
 
-  const [successMessage, setSuccessMessage] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    constituency: "",
+  });
 
-  const handleDelete = (id) => {
-    setEngineers(engineers.filter((eng) => eng.id !== id));
-    setSuccessMessage("Engineer deleted successfully!");
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-    // Hide message after 3 seconds
-    setTimeout(() => setSuccessMessage(""), 3000);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const newEngineer = {
+      id: engineers.length + 1,
+      ...formData,
+    };
+
+    setEngineers([...engineers, newEngineer]);
+    setFormData({ name: "", email: "", constituency: "" });
+    setShowForm(false);
+  };
+
+  // OPEN CONFIRM DIALOG
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setOpenDialog(true);
+  };
+
+  // CONFIRM DELETE
+  const confirmDelete = () => {
+    const updatedList = engineers.filter((eng) => eng.id !== deleteId);
+    setEngineers(updatedList);
+    setOpenDialog(false);
+    setSuccessMsg(true);
   };
 
   return (
@@ -61,9 +100,9 @@ export default function AddEngineer() {
             }}
           >
             {/* Header */}
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box display="flex" justifyContent="space-between" mb={4}>
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                {showForm ? "Add Engineers" : "Engineer Details"}
+                {showForm ? "ADD ENGINEERS" : "ENGINEER DETAILS"}
               </Typography>
 
               <Button
@@ -71,9 +110,6 @@ export default function AddEngineer() {
                 onClick={() => setShowForm(!showForm)}
                 sx={{
                   backgroundColor: "#0D47A1",
-                  px: 3,
-                  py: 1,
-                  fontWeight: "bold",
                   "&:hover": { backgroundColor: "#08306B" },
                 }}
               >
@@ -86,11 +122,11 @@ export default function AddEngineer() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#0D47A1" }}>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Sr No.</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Name</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Email</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Constituency</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
+                    <TableCell sx={{ color: "white" }}>Sr No.</TableCell>
+                    <TableCell sx={{ color: "white" }}>Name</TableCell>
+                    <TableCell sx={{ color: "white" }}>Email</TableCell>
+                    <TableCell sx={{ color: "white" }}>Constituency</TableCell>
+                    <TableCell sx={{ color: "white" }}>Delete</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -105,8 +141,7 @@ export default function AddEngineer() {
                         <Button
                           variant="contained"
                           color="error"
-                          size="small"
-                          onClick={() => handleDelete(eng.id)}
+                          onClick={() => handleDeleteClick(eng.id)}
                         >
                           Delete
                         </Button>
@@ -119,19 +154,66 @@ export default function AddEngineer() {
 
             {/* FORM */}
             {showForm && (
-              <Box component="form" sx={{ maxWidth: 500, mx: "auto" }}>
-                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Constituency*</Typography>
-                <TextField fullWidth select margin="normal" required>
+              <Box
+                component="form"
+                onSubmit={handleSubmit}
+                sx={{
+                  maxWidth: 500,
+                  mx: "auto",
+                  p: 4,
+                  borderRadius: 4,
+                  backdropFilter: "blur(10px)",
+                  background: "rgba(255,255,255,0.85)",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 3,
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    color: "#1e3c72",
+                  }}
+                >
+                  Add Engineer
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  select
+                  margin="normal"
+                  required
+                  label="Constituency"
+                  name="constituency"
+                  value={formData.constituency}
+                  onChange={handleChange}
+                >
                   <MenuItem value="Margao">Margao</MenuItem>
                   <MenuItem value="Fatorda">Fatorda</MenuItem>
                   <MenuItem value="Benaulim">Benaulim</MenuItem>
                 </TextField>
 
-                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Name*</Typography>
-                <TextField fullWidth margin="normal" required />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  required
+                  label="Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
 
-                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Email*</Typography>
-                <TextField fullWidth type="email" margin="normal" required />
+                <TextField
+                  fullWidth
+                  type="email"
+                  margin="normal"
+                  required
+                  label="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
 
                 <Button
                   fullWidth
@@ -141,8 +223,9 @@ export default function AddEngineer() {
                     mt: 4,
                     py: 1.5,
                     fontSize: 16,
-                    backgroundColor: "#0D47A1",
-                    "&:hover": { backgroundColor: "#08306B" },
+                    fontWeight: "bold",
+                    borderRadius: 3,
+                    background: "linear-gradient(90deg, #1e3c72, #2a5298)",
                   }}
                 >
                   Submit
@@ -151,23 +234,33 @@ export default function AddEngineer() {
             )}
           </Paper>
         </Container>
-
-        {/* Success message at bottom */}
-        {successMessage && (
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: 20,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "auto",
-              zIndex: 9999,
-            }}
-          >
-            <Alert severity="success">{successMessage}</Alert>
-          </Box>
-        )}
       </Box>
+
+      {/* CONFIRM DELETE DIALOG */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this engineer?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* SUCCESS MESSAGE */}
+      <Snackbar
+        open={successMsg}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMsg(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert severity="success" variant="filled">
+          Deleted successfully!
+        </Alert>
+      </Snackbar>
     </>
   );
 }
