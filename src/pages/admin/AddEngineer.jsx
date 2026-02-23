@@ -1,31 +1,39 @@
+import { useState } from "react";
 import {
   Container,
   Typography,
-  Paper,
   Box,
   TextField,
   Button,
-  Divider,
   MenuItem,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Alert,
 } from "@mui/material";
-import { useState } from "react";
+
 import Navbar from "../../components/Navbar";
 import bg from "../../assets/LBB.jpg";
 
 export default function AddEngineer() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    area: "",
-  });
+  const [showForm, setShowForm] = useState(false);
+  const [engineers, setEngineers] = useState([
+    { id: 1, name: "Ravi Naik", email: "ravi@gmail.com", constituency: "Margao" },
+    { id: 2, name: "Suresh Patil", email: "suresh@gmail.com", constituency: "Fatorda" },
+    { id: 3, name: "Anita Dessai", email: "anita@gmail.com", constituency: "Benaulim" },
+  ]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSubmit = () => {
-    console.log(form);
+  const handleDelete = (id) => {
+    setEngineers(engineers.filter((eng) => eng.id !== id));
+    setSuccessMessage("Engineer deleted successfully!");
+
+    // Hide message after 3 seconds
+    setTimeout(() => setSuccessMessage(""), 3000);
   };
 
   return (
@@ -38,80 +46,127 @@ export default function AddEngineer() {
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
-          py: 6,
+          pt: 12,
         }}
       >
-        <Container maxWidth="sm">
+        <Container maxWidth="lg">
           <Paper
-            elevation={6}
             sx={{
-              borderRadius: 4,
-              p: 4,
-              backgroundColor: "rgba(255,255,255,0.97)",
+              p: 5,
+              borderRadius: 3,
+              backgroundColor: "rgba(255,255,255,0.95)",
+              boxShadow: 5,
             }}
           >
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              sx={{ mb: 1, color: "#1976d2" }}
-            >
-              Add Engineer
-            </Typography>
+            {/* Header */}
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                {showForm ? "Add Engineers" : "Engineer Details"}
+              </Typography>
 
-            <Typography variant="body2" sx={{ mb: 3, color: "gray" }}>
-              Register new field engineers into the system
-            </Typography>
+              <Button
+                variant="contained"
+                onClick={() => setShowForm(!showForm)}
+                sx={{
+                  backgroundColor: "#0D47A1",
+                  px: 3,
+                  py: 1,
+                  fontWeight: "bold",
+                  "&:hover": { backgroundColor: "#08306B" },
+                }}
+              >
+                {showForm ? "View Engineers" : "Add Engineer"}
+              </Button>
+            </Box>
 
-            <Divider sx={{ mb: 3 }} />
+            {/* TABLE */}
+            {!showForm && (
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#0D47A1" }}>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Sr No.</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Name</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Email</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Constituency</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
 
-            <TextField
-              fullWidth
-              select
-              label="Constituency"
-              name="area"
-              value={form.area}
-              onChange={handleChange}
-              sx={{ mb: 3 }}
-            >
-              <MenuItem value="Margao">Margao</MenuItem>
-              <MenuItem value="Fatorda">Fatorda</MenuItem>
-              <MenuItem value="Benaulim">Benaulim</MenuItem>
-            </TextField>
+                <TableBody>
+                  {engineers.map((eng, index) => (
+                    <TableRow key={eng.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{eng.name}</TableCell>
+                      <TableCell>{eng.email}</TableCell>
+                      <TableCell>{eng.constituency}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          onClick={() => handleDelete(eng.id)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
 
-            <TextField
-              fullWidth
-              label="Engineer Name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
+            {/* FORM */}
+            {showForm && (
+              <Box component="form" sx={{ maxWidth: 500, mx: "auto" }}>
+                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Constituency*</Typography>
+                <TextField fullWidth select margin="normal" required>
+                  <MenuItem value="Margao">Margao</MenuItem>
+                  <MenuItem value="Fatorda">Fatorda</MenuItem>
+                  <MenuItem value="Benaulim">Benaulim</MenuItem>
+                </TextField>
 
-            <TextField
-              fullWidth
-              label="Email Address"
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
+                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Name*</Typography>
+                <TextField fullWidth margin="normal" required />
 
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={handleSubmit}
-              sx={{ py: 1.5, fontWeight: "bold", borderRadius: 2 }}
-            >
-              Add Engineer
-            </Button>
+                <Typography sx={{ fontWeight: "bold", mt: 2 }}>Email*</Typography>
+                <TextField fullWidth type="email" margin="normal" required />
+
+                <Button
+                  fullWidth
+                  variant="contained"
+                  type="submit"
+                  sx={{
+                    mt: 4,
+                    py: 1.5,
+                    fontSize: 16,
+                    backgroundColor: "#0D47A1",
+                    "&:hover": { backgroundColor: "#08306B" },
+                  }}
+                >
+                  Submit
+                </Button>
+              </Box>
+            )}
           </Paper>
         </Container>
+
+        {/* Success message at bottom */}
+        {successMessage && (
+          <Box
+            sx={{
+              position: "fixed",
+              bottom: 20,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "auto",
+              zIndex: 9999,
+            }}
+          >
+            <Alert severity="success">{successMessage}</Alert>
+          </Box>
+        )}
       </Box>
     </>
   );
