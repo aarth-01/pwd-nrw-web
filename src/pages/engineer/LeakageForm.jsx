@@ -8,6 +8,8 @@ import {
   Paper
 } from "@mui/material";
 
+import { useTheme, useMediaQuery } from "@mui/material";
+
 import { getAuth } from "firebase/auth";
 const auth = getAuth();
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -19,6 +21,9 @@ import Navbar from "../../components/Navbar";
 import bg from "../../assets/bg-front.jpg";
 
 export default function LeakageForm() {
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const locationData = useLocation();
 
@@ -109,6 +114,227 @@ export default function LeakageForm() {
       alert("Error saving data: " + error.message);
     }
   };
+
+  if (isMobile) {
+    return (
+      <>
+        <Navbar role="engineer" />
+
+        <Box
+          sx={{
+            minHeight: "100vh",
+            backgroundColor: "#f4f6f9",
+            pb: 10, // space for sticky button
+          }}
+        >
+          <Container maxWidth="sm" sx={{ pt: 2 }}>
+
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              textAlign="center"
+              sx={{ mb: 2 }}
+            >
+              Leakage Entry
+            </Typography>
+
+            {selectedLocation && (
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: "green",
+                  mb: 1
+                }}
+              >
+                📍 {address || "Fetching address..."}
+              </Typography>
+            )}
+
+            <Button
+              fullWidth
+              variant="outlined"
+              size="small"
+              sx={{ mb: 2 }}
+              onClick={() => navigate("/engineer/map")}
+            >
+              Mark Location on Map
+            </Button>
+
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Constituency"
+              name="constituency"
+              value={formData.constituency}
+              onChange={handleChange}
+              margin="dense"
+            >
+              <MenuItem value="Margao">Margao</MenuItem>
+              <MenuItem value="Fatorda">Fatorda</MenuItem>
+              <MenuItem value="Benaulim">Benaulim</MenuItem>
+            </TextField>
+
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Leakage Type"
+              name="leakageType"
+              value={formData.leakageType}
+              onChange={handleChange}
+              margin="dense"
+            >
+              <MenuItem value="Breakdown">Breakdown</MenuItem>
+              <MenuItem value="Corrosion">Corrosion</MenuItem>
+              <MenuItem value="Manmade">Man-made</MenuItem>
+              <MenuItem value="Aging">Aging</MenuItem>
+            </TextField>
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Pipeline Type"
+              name="pipelineType"
+              value={formData.pipelineType}
+              onChange={handleChange}
+              margin="dense"
+            />
+
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Days"
+                name="days"
+                value={formData.days}
+                onChange={handleChange}
+                margin="dense"
+                type="number"
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Hours"
+                name="hours"
+                value={formData.hours}
+                onChange={handleChange}
+                margin="dense"
+                type="number"
+              />
+            </Box>
+
+            <TextField
+              fullWidth
+              size="small"
+              label="LPM"
+              name="lpm"
+              value={formData.lpm}
+              onChange={handleChange}
+              margin="dense"
+              type="number"
+            />
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Water Pressure"
+              name="pressure"
+              value={formData.pressure}
+              onChange={handleChange}
+              margin="dense"
+            />
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Diameter"
+              name="diameter"
+              value={formData.diameter}
+              onChange={handleChange}
+              margin="dense"
+            />
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Plumber Name"
+              name="plumberName"
+              value={formData.plumberName}
+              onChange={handleChange}
+              margin="dense"
+            />
+
+            <Typography sx={{ mt: 2, fontSize: 14 }}>
+              Add Images
+            </Typography>
+
+            <TextField
+              fullWidth
+              type="file"
+              size="small"
+              margin="dense"
+              inputProps={{ accept: "image/*", multiple: true }}
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                  setImageFiles(files);
+                  setPreviews(files.map(file => URL.createObjectURL(file)));
+                }
+              }}
+            />
+
+            {previews.length > 0 && (
+              <Box
+                sx={{
+                  mt: 1,
+                  display: "flex",
+                  gap: 1,
+                  overflowX: "auto",
+                }}
+              >
+                {previews.map((src, index) => (
+                  <img
+                    key={index}
+                    src={src}
+                    alt="preview"
+                    style={{
+                      width: 90,
+                      height: 90,
+                      objectFit: "cover",
+                      borderRadius: 8
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Container>
+
+          {/* 🔥 Sticky Bottom Submit Button */}
+          <Box
+            sx={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              width: "100%",
+              p: 2,
+              backgroundColor: "#fff",
+              boxShadow: "0 -2px 10px rgba(0,0,0,0.1)"
+            }}
+          >
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              onClick={handleSubmit}
+            >
+              Submit Leakage
+            </Button>
+          </Box>
+        </Box>
+      </>
+    );
+  }
 
   return (
     <>
