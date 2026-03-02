@@ -59,6 +59,7 @@ export default function Navbar({ role }) {
   const engineerMenu = [
     { text: "New Leakage", path: "/engineer/leakage-form" },
     { text: "Map", path: "/engineer/map" },
+    { text: "Recent Leakages", path: "/engineer/recent-leakages" },
   ];
 
   return (

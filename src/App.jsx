@@ -31,6 +31,8 @@ function App() {
         <Route path="/engineer/leakage-form" element={<LeakageForm />} />
         <Route path="/engineer/map" element={<EngineerMap />} />
         <Route path="/engineer/success" element={<Success />} />
+        <Route path="/engineer/recent-leakages" element={<RecentLeakages />}
+/>
 
       </Routes>
     </BrowserRouter>

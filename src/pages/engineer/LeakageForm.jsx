@@ -8,6 +8,8 @@ import {
   Paper
 } from "@mui/material";
 
+import { getAuth } from "firebase/auth";
+const auth = getAuth();
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -24,7 +26,6 @@ export default function LeakageForm() {
 
   const [address, setAddress] = useState("");
 
-  // ✅ CORRECT MULTIPLE IMAGE STATE
   const [imageFiles, setImageFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
 
@@ -64,6 +65,8 @@ export default function LeakageForm() {
 
   const handleSubmit = async () => {
     try {
+      const UID = auth.currentUser.uid;
+
       const geoLocation = selectedLocation
         ? {
             lat: selectedLocation.lat,
@@ -88,10 +91,9 @@ export default function LeakageForm() {
         lpm: Number(formData.lpm || 0),
         pressure: formData.pressure,
         diameter: formData.diameter,
-        plumberName: formData.plumberName || "Aarth Vajandar",
+        plumberName: formData.plumberName || "",
         location: geoLocation,
         waterLoss: estimatedLoss,
-
         timestamp: serverTimestamp(),
       });
 
