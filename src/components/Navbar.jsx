@@ -11,6 +11,9 @@ import {
   ListItemIcon,
   Box,
   Button,
+  Menu,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -20,6 +23,8 @@ import EngineeringIcon from "@mui/icons-material/Engineering";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import DescriptionIcon from "@mui/icons-material/Description";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -27,8 +32,12 @@ import { useState, useEffect } from "react";
 export default function Navbar({ role }) {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState(location.pathname);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openProfile = Boolean(anchorEl);
 
   useEffect(() => {
     setActiveTab(location.pathname);
@@ -38,7 +47,7 @@ export default function Navbar({ role }) {
 
   const handleLogout = () => navigate("/");
 
-  /* ---------------- ADMIN MENU (UNCHANGED) ---------------- */
+  /* ---------------- ADMIN MENU ---------------- */
   const adminMenu = [
     { text: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon /> },
     { text: "Map", path: "/admin/map", icon: <MapIcon /> },
@@ -46,7 +55,7 @@ export default function Navbar({ role }) {
     { text: "Engineers", path: "/admin/add-engineer", icon: <EngineeringIcon /> },
   ];
 
-  /* ---------------- ENGINEER MENU (TOP ONLY) ---------------- */
+  /* ---------------- ENGINEER MENU ---------------- */
   const engineerMenu = [
     { text: "New Leakage", path: "/engineer/leakage-form" },
     { text: "Map", path: "/engineer/map" },
@@ -54,7 +63,7 @@ export default function Navbar({ role }) {
 
   return (
     <>
-      {/* TOP APPBAR */}
+      {/* ================= TOP BAR ================= */}
       <AppBar
         position="static"
         sx={{
@@ -66,7 +75,7 @@ export default function Navbar({ role }) {
             DDW-NRW : Real Losses
           </Typography>
 
-          {/* ENGINEER TOP MENU */}
+          {/* ENGINEER MENU */}
           {role === "engineer" && (
             <>
               {engineerMenu.map((item) => (
@@ -83,15 +92,61 @@ export default function Navbar({ role }) {
                 </Button>
               ))}
 
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
-              </Button>
+              {/* PROFILE BUTTON */}
+              <IconButton
+                color="inherit"
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                sx={{ ml: 1 }}
+              >
+                <AccountCircleIcon sx={{ fontSize: 30 }} />
+              </IconButton>
+
+              {/* PROFILE MENU */}
+              <Menu
+                anchorEl={anchorEl}
+                open={openProfile}
+                onClose={() => setAnchorEl(null)}
+                PaperProps={{
+                  sx: {
+                    borderRadius: 3,
+                    minWidth: 200,
+                    p: 1,
+                  },
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                   navigate("/engineer/recent-leakages");
+                    setAnchorEl(null);
+                  }}
+                >
+                  <ListItemIcon>
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  View Recent Leakages
+                </MenuItem>
+
+                <Divider />
+
+                <MenuItem
+                  onClick={handleLogout}
+                  sx={{
+                    color: "red",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <ListItemIcon sx={{ color: "red" }}>
+                    <LogoutIcon />
+                  </ListItemIcon>
+                  Logout
+                </MenuItem>
+              </Menu>
             </>
           )}
         </Toolbar>
       </AppBar>
 
-      {/* ADMIN SIDEBAR (NO CHANGES MADE) */}
+      {/* ================= ADMIN SIDEBAR ================= */}
       {role === "admin" && (
         <Drawer
           variant="permanent"
@@ -179,6 +234,7 @@ export default function Navbar({ role }) {
             </List>
           </Box>
 
+          {/* ADMIN LOGOUT */}
           <Box sx={{ p: 2 }}>
             <ListItemButton
               onClick={handleLogout}
@@ -200,6 +256,7 @@ export default function Navbar({ role }) {
               >
                 <LogoutIcon />
               </ListItemIcon>
+
               {!collapsed && (
                 <ListItemText
                   primary="Logout"

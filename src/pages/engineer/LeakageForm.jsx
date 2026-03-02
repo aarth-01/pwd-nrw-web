@@ -11,7 +11,6 @@ import {
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -21,9 +20,13 @@ export default function LeakageForm() {
   const navigate = useNavigate();
   const locationData = useLocation();
 
-  const selectedLocation = locationData.state?.location || null;//new change
+  const selectedLocation = locationData.state?.location || null;
 
   const [address, setAddress] = useState("");
+
+  // ✅ CORRECT MULTIPLE IMAGE STATE
+  const [imageFiles, setImageFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
 
   const [formData, setFormData] = useState({
     constituency: "",
@@ -61,7 +64,6 @@ export default function LeakageForm() {
 
   const handleSubmit = async () => {
     try {
-      // Build location object including address
       const geoLocation = selectedLocation
         ? {
             lat: selectedLocation.lat,
@@ -70,16 +72,13 @@ export default function LeakageForm() {
           }
         : null;
 
-      // Calculate duration (days + hours only)
       const totalMinutes =
         Number(formData.days || 0) * 1440 +
         Number(formData.hours || 0) * 60;
 
-      // Water loss calculation using LPM
       const estimatedLoss =
         Number(formData.lpm || 0) * totalMinutes;
 
-      // Save to Firestore
       await addDoc(collection(db, "leakages"), {
         constituency: formData.constituency,
         leakageType: formData.leakageType,
@@ -107,12 +106,10 @@ export default function LeakageForm() {
     }
   };
 
-
   return (
     <>
       <Navbar role="engineer" />
 
-      {/* ===== PAGE BACKGROUND ===== */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -126,25 +123,21 @@ export default function LeakageForm() {
           justifyContent: "center",
           p: 3,
           position: "relative",
-
-          // ⭐ overlay WITHOUT blur
           "&::before": {
             content: '""',
             position: "absolute",
             inset: 0,
-            bgcolor: "rgba(255,255,255,0.55)" // lighter overlay, no blur
+            bgcolor: "rgba(255,255,255,0.55)"
           }
         }}
       >
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-
-          {/* ===== CARD ===== */}
           <Paper
             elevation={10}
             sx={{
               p: 4,
               borderRadius: 4,
-              background: "rgba(255,255,255,0.95)" // solid clean look
+              background: "rgba(255,255,255,0.95)"
             }}
           >
             <Typography
@@ -156,13 +149,32 @@ export default function LeakageForm() {
             >
               LEAKAGE ENTRY FORM
             </Typography>
-            
-            {/* ✅ ADDED: show selected location */}
+
             {selectedLocation && (
-              <Typography color="green" sx={{ mb: 2 }}>  
-                📍 {address || "Fetching address..."} 
+              <Typography color="green" sx={{ mb: 2 }}>
+                📍 {address || "Fetching address..."}
               </Typography>
             )}
+
+            <Box sx={{ display: "flex", justifyContent: "left", mt: 2 }}>
+              <Button
+                variant="contained"
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 2,
+                  py: 0.8,
+                  backgroundColor: "#4FC3F7",
+                  "&:hover": {
+                    backgroundColor: "#29B6F6"
+                  }
+                }}
+                onClick={() => navigate("/engineer/map")}
+              >
+                Mark Location on Map
+              </Button>
+            </Box>
 
             <TextField select fullWidth label="Constituency" name="constituency" margin="normal" onChange={handleChange}>
               <MenuItem value="Margao">Margao</MenuItem>
@@ -177,13 +189,7 @@ export default function LeakageForm() {
               <MenuItem value="Aging">Aging</MenuItem>
             </TextField>
 
-            <TextField
-              fullWidth
-              label="Pipeline Type (GI / PVC etc)"
-              name="pipelineType"
-              margin="normal"
-              onChange={handleChange}
-            />
+            <TextField fullWidth label="Pipeline Type (GI / PVC etc)" name="pipelineType" margin="normal" onChange={handleChange} />
 
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField fullWidth label="Days" name="days" margin="normal" onChange={handleChange} />
@@ -195,23 +201,62 @@ export default function LeakageForm() {
             <TextField fullWidth label="Diameter" name="diameter" margin="normal" onChange={handleChange} />
             <TextField fullWidth label="Plumber / Meter Reader Name" name="plumberName" margin="normal" onChange={handleChange} />
 
-            <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-              
-              {/* ✅ ADDED onClick */}
-              <Button
-                fullWidth
-                variant="outlined"
-                sx={{ borderRadius: 2 }}
-                onClick={() => navigate("/engineer/map")} //new change
-              >
-                Mark Location on Map
-              </Button>
+            <Typography sx={{ mt: 2, fontWeight: 500 }}>
+              Add Image
+            </Typography>
 
+            {/* ✅ Modified file input with multiple image preview */}
+            <TextField
+              fullWidth
+              type="file"
+              margin="normal"
+              inputProps={{ accept: "image/*", multiple: true }}
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                  setImageFiles(files);
+                  setPreviews(files.map(file => URL.createObjectURL(file)));
+                }
+              }}
+            />
+
+            {previews.length > 0 && (
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  justifyContent: "center"
+                }}
+              >
+                {previews.map((src, index) => (
+                  <img
+                    key={index}
+                    src={src}
+                    alt={`Preview ${index}`}
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      objectFit: "cover",
+                      borderRadius: "8px"
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Button
-                fullWidth
                 variant="contained"
+                size="small"
                 onClick={handleSubmit}
-                sx={{ borderRadius: 2, fontWeight: 600 }}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1
+                }}
               >
                 Submit
               </Button>

@@ -1,96 +1,249 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import {
   Container,
   Typography,
+  TextField,
+  MenuItem,
+  Grid,
+  Paper,
   Box,
-  CircularProgress,
+  Button,
 } from "@mui/material";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
+import L from "leaflet";
+import bg from "../../assets/LBB.jpg";
+import "leaflet/dist/leaflet.css";
 
-// 🔥 Fix default marker issue
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
+/* FIX marker icon issue */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-export default function MapView() {
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
+/* Recenter Map */
+function RecenterMap({ position }) {
+  const map = useMap();
 
   useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "leakages"));
+    if (position && Array.isArray(position)) {
+      map.flyTo(position, 14);
+    }
+  }, [position, map]);
 
-        const data = snapshot.docs.map((doc) => ({
+  return null;
+}
+
+export default function AdminMapView() {
+  const [selectedConstituency, setSelectedConstituency] = useState("All");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [leakages, setLeakages] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchPosition, setSearchPosition] = useState(null);
+
+  /* Fetch Firestore */
+  useEffect(() => {
+    const fetchLeakages = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "leakages"));
+
+        const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        setLocations(data);
+        setLeakages(data);
       } catch (error) {
-        console.error("Error fetching locations:", error);
+        console.log("Error:", error);
       }
-
-      setLoading(false);
     };
 
-    fetchLocations();
+    fetchLeakages();
   }, []);
+
+  /* Filtering */
+  const filteredLeakages = leakages.filter((item) => {
+    const constituencyMatch =
+      selectedConstituency === "All" ||
+      item.constituency === selectedConstituency;
+
+    let itemDate = "";
+    if (item.timestamp?.toDate) {
+      itemDate = item.timestamp.toDate().toISOString().split("T")[0];
+    }
+
+    const dateMatch = !selectedDate || itemDate === selectedDate;
+
+    return constituencyMatch && dateMatch;
+  });
+
+  /* Search Location */
+  const handleSearch = async () => {
+    if (!search.trim()) return;
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${search}`
+      );
+
+      const data = await res.json();
+
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+
+        setSearchPosition([lat, lon]);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <>
       <Navbar role="admin" />
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Leakage Map
-        </Typography>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          backgroundImage: `url(${bg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          py: 4,
+          pl: { md: "260px" }, // space for sidebar
+        }}
+      >
+        <Container maxWidth="lg">
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Box sx={{ height: "600px", width: "100%" }}>
-            <MapContainer
-              center={[15.2993, 74.124]}
-              zoom={11}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+          {/* Title */}
+          <Paper
+            sx={{
+              p: 3,
+              mb: 3,
+              borderRadius: 3,
+              backgroundColor: "rgba(255,255,255,0.95)",
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold">
+              Leakage Locations – Constituency View
+            </Typography>
+          </Paper>
 
-              {locations.map((loc) => (
-                <Marker
-                  key={loc.id}
-                  position={[
-                    parseFloat(loc.latitude),
-                    parseFloat(loc.longitude),
-                  ]}
+          {/* Filters */}
+          <Paper
+            sx={{
+              p: 3,
+              mb: 3,
+              borderRadius: 3,
+              backgroundColor: "rgba(255,255,255,0.95)",
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Constituency"
+                  value={selectedConstituency}
+                  onChange={(e) => setSelectedConstituency(e.target.value)}
                 >
-                  <Popup>
-                    <strong>Address:</strong> {loc.address}
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </Box>
-        )}
-      </Container>
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Margao">Margao</MenuItem>
+                  <MenuItem value="Fatorda">Fatorda</MenuItem>
+                  <MenuItem value="Benaulim">Benaulim</MenuItem>
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  type="date"
+                  fullWidth
+                  label="Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Search */}
+          <Paper
+            sx={{
+              p: 2,
+              mb: 3,
+              borderRadius: 3,
+              backgroundColor: "rgba(255,255,255,0.95)",
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search location (Margao, Goa)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Button variant="outlined" onClick={handleSearch}>
+                Search
+              </Button>
+            </Box>
+          </Paper>
+
+          {/* MAP */}
+          <Paper
+            sx={{
+              borderRadius: 3,
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ height: "500px", width: "100%" }}>
+              <MapContainer
+                center={[15.2993, 74.124]}
+                zoom={11}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer
+                  attribution="© OpenStreetMap contributors"
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                <RecenterMap position={searchPosition} />
+
+                {filteredLeakages
+                  .filter(
+                    (item) =>
+                      item.location?.lat &&
+                      item.location?.lng
+                  )
+                  .map((item) => (
+                    <Marker
+                      key={item.id}
+                      position={[
+                        parseFloat(item.location.lat),
+                        parseFloat(item.location.lng),
+                      ]}
+                    >
+                      <Popup>
+                        <b>Constituency:</b> {item.constituency} <br />
+                        <b>Leakage:</b> {item.leakageType} <br />
+                        <b>Engineer:</b> {item.plumberName}
+                      </Popup>
+                    </Marker>
+                  ))}
+              </MapContainer>
+            </Box>
+          </Paper>
+
+        </Container>
+      </Box>
     </>
   );
 }
