@@ -80,6 +80,7 @@ export default function LeakageForm() {
         Number(formData.lpm || 0) * totalMinutes;
 
       await addDoc(collection(db, "leakages"), {
+        engineerId: UID,
         constituency: formData.constituency,
         leakageType: formData.leakageType,
         pipelineType: formData.pipelineType,
@@ -90,6 +91,7 @@ export default function LeakageForm() {
         plumberName: formData.plumberName || "Aarth Vajandar",
         location: geoLocation,
         waterLoss: estimatedLoss,
+
         timestamp: serverTimestamp(),
       });
 

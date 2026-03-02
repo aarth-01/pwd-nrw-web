@@ -9,6 +9,7 @@ import AddEngineer from "./pages/admin/AddEngineer";
 
 // Engineer
 import LeakageForm from "./pages/engineer/LeakageForm";
+import RecentLeakages from "./pages/engineer/RecentLeakages";
 import EngineerMap from "./pages/engineer/MapView";
 import Success from "./pages/engineer/Success";
 

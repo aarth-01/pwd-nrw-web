@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -23,23 +23,53 @@ import {
 import Navbar from "../../components/Navbar";
 import bg from "../../assets/LBB.jpg";
 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import { db } from "../../firebase";
+
 export default function AddEngineer() {
   const [showForm, setShowForm] = useState(false);
   const [successMsg, setSuccessMsg] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const [engineers, setEngineers] = useState([
-    { id: 1, name: "Ravi Naik", email: "ravi@gmail.com", constituency: "Margao" },
-    { id: 2, name: "Suresh Patil", email: "suresh@gmail.com", constituency: "Fatorda" },
-    { id: 3, name: "Anita Dessai", email: "anita@gmail.com", constituency: "Benaulim" },
-  ]);
+  const [engineers, setEngineers] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     constituency: "",
   });
+
+  // 🔥 FETCH ENGINEERS FROM FIRESTORE
+  useEffect(() => {
+    fetchEngineers();
+  }, []);
+
+  const fetchEngineers = async () => {
+    const q = query(
+      collection(db, "users"),
+      where("role", "==", "engineer")
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const data = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setEngineers(data);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -48,17 +78,24 @@ export default function AddEngineer() {
     });
   };
 
-  const handleSubmit = (e) => {
+  // 🔥 ADD ENGINEER
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newEngineer = {
-      id: engineers.length + 1,
-      ...formData,
-    };
+    try {
+      await addDoc(collection(db, "users"), {
+        ...formData,
+        role: "engineer",
+        createdAt: serverTimestamp(),
+      });
 
-    setEngineers([...engineers, newEngineer]);
-    setFormData({ name: "", email: "", constituency: "" });
-    setShowForm(false);
+      setFormData({ name: "", email: "", constituency: "" });
+      setShowForm(false);
+      fetchEngineers();
+
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // OPEN CONFIRM DIALOG
@@ -67,12 +104,18 @@ export default function AddEngineer() {
     setOpenDialog(true);
   };
 
-  // CONFIRM DELETE
-  const confirmDelete = () => {
-    const updatedList = engineers.filter((eng) => eng.id !== deleteId);
-    setEngineers(updatedList);
-    setOpenDialog(false);
-    setSuccessMsg(true);
+  // 🔥 DELETE ENGINEER
+  const confirmDelete = async () => {
+    try {
+      await deleteDoc(doc(db, "users", deleteId));
+
+      setOpenDialog(false);
+      setSuccessMsg(true);
+      fetchEngineers();
+
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -99,10 +142,9 @@ export default function AddEngineer() {
               boxShadow: 5,
             }}
           >
-            {/* Header */}
             <Box display="flex" justifyContent="space-between" mb={4}>
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                {showForm ? "ADD ENGINEERS" : "ENGINEER DETAILS"}
+                {showForm ? "ADD ENGINEER" : "ENGINEER DETAILS"}
               </Typography>
 
               <Button
@@ -117,7 +159,6 @@ export default function AddEngineer() {
               </Button>
             </Box>
 
-            {/* TABLE */}
             {!showForm && (
               <Table>
                 <TableHead>
@@ -152,7 +193,6 @@ export default function AddEngineer() {
               </Table>
             )}
 
-            {/* FORM */}
             {showForm && (
               <Box
                 component="form"
@@ -162,7 +202,6 @@ export default function AddEngineer() {
                   mx: "auto",
                   p: 4,
                   borderRadius: 4,
-                  backdropFilter: "blur(10px)",
                   background: "rgba(255,255,255,0.85)",
                   boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
                 }}
@@ -236,7 +275,6 @@ export default function AddEngineer() {
         </Container>
       </Box>
 
-      {/* CONFIRM DELETE DIALOG */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
@@ -250,7 +288,6 @@ export default function AddEngineer() {
         </DialogActions>
       </Dialog>
 
-      {/* SUCCESS MESSAGE */}
       <Snackbar
         open={successMsg}
         autoHideDuration={3000}
