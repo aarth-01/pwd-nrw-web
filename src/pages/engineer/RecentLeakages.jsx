@@ -8,8 +8,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Button,
 } from "@mui/material";
 
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -21,45 +23,38 @@ import {
 
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function RecentLeakages() {
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuth();
 
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-        if (!user) {
-        console.log("No user logged in yet");
-        return;
-        }
+      if (!user) return;
 
-        console.log("Current UID:", user.uid);
-
-        const q = query(
+      const q = query(
         collection(db, "leakages"),
         where("engineerId", "==", user.uid),
         orderBy("timestamp", "desc")
-        );
+      );
 
-        const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-        console.log("Documents found:", snapshot.size);
-
+      const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
         const leakages = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
+          id: doc.id,
+          ...doc.data(),
         }));
 
         setData(leakages);
-        });
+      });
 
-        return () => unsubscribeSnapshot();
+      return () => unsubscribeSnapshot();
     });
 
     return () => unsubscribeAuth();
-    }, []);
-
-  
+  }, []);
 
   return (
     <Box sx={{ minHeight: "100vh", width: "100%", background: "#f4f6f9" }}>
@@ -73,21 +68,54 @@ export default function RecentLeakages() {
           flexDirection: "column",
         }}
       >
+        {/* HEADER */}
         <Box
           sx={{
             background: "linear-gradient(90deg,#1e3c72,#2a5298)",
             color: "white",
             p: 3,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-            My Recent Leakages
-          </Typography>
-          <Typography>
-            Department of Drinking Water — Real Loss Monitoring System
-          </Typography>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+              My Recent Leakages
+            </Typography>
+            <Typography>
+              Department of Drinking Water — Real Loss Monitoring System
+            </Typography>
+          </Box>
+
+          {/* MODERN BACK BUTTON */}
+          <Button
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+            onClick={() => navigate("/engineer/leakage-form")}
+            sx={{
+              borderRadius: "30px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              backdropFilter: "blur(6px)",
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.4)",
+              color: "white",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                background: "white",
+                color: "#1e3c72",
+                transform: "translateY(-2px)",
+              },
+            }}
+          >
+            BACK
+          </Button>
         </Box>
 
+        {/* TABLE */}
         <TableContainer sx={{ flex: 1 }}>
           <Table>
             <TableHead sx={{ backgroundColor: "#eef2f7" }}>

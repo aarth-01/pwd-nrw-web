@@ -68,7 +68,7 @@ export default function Navbar({ role }) {
       <AppBar
         position="static"
         sx={{
-          background: "linear-gradient(90deg, #0f2027, #203a43, #2c5364)",
+          background: "linear-gradient(90deg, #1e3c72, #2a5298)", // MATCHED SIDEBAR COLOR
         }}
       >
         <Toolbar>
@@ -117,7 +117,7 @@ export default function Navbar({ role }) {
               >
                 <MenuItem
                   onClick={() => {
-                   navigate("/engineer/recent-leakages");
+                    navigate("/engineer/recent-leakages");
                     setAnchorEl(null);
                   }}
                 >

@@ -1,4 +1,10 @@
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap
+} from "react-leaflet";
 import { useState, useRef, useEffect } from "react";
 import {
   Container,
@@ -6,14 +12,16 @@ import {
   Button,
   Box,
   Paper,
-  TextField
+  TextField,
+  useTheme,
+  useMediaQuery
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import L from "leaflet";
 import bg from "../../assets/bg-front.jpg";
 
-// ===== Fix default marker icon issue =====
+/* ===== Fix Leaflet Marker Icons ===== */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -24,19 +32,20 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+/* ===== Smooth Recenter ===== */
 function RecenterMap({ position }) {
   const map = useMap();
 
   useEffect(() => {
     if (position) {
-      map.flyTo(position, 15); // smooth animation
+      map.flyTo(position, 15);
     }
   }, [position, map]);
 
   return null;
 }
 
-
+/* ===== Click Marker ===== */
 function LocationMarker({ setPosition }) {
   useMapEvents({
     click(e) {
@@ -47,19 +56,25 @@ function LocationMarker({ setPosition }) {
 }
 
 export default function MapView() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [position, setPosition] = useState(null);
   const [search, setSearch] = useState("");
   const mapRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleConfirm = () => { //new change
+  /* ===== Confirm Location ===== */
+  const handleConfirm = () => {
     if (!position) return;
+
     navigate("/engineer/leakage-form", {
       state: { location: position },
     });
   };
 
-   const handleSearch = async () => {
+  /* ===== Search Location ===== */
+  const handleSearch = async () => {
     if (!search) return;
 
     try {
@@ -71,35 +86,121 @@ export default function MapView() {
       if (data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
-
         setPosition({ lat, lng: lon });
-
       }
     } catch (err) {
       console.log(err);
     }
   };
 
+  /* ================= MOBILE VERSION ================= */
+
+  if (isMobile) {
+    return (
+      <>
+        <Navbar role="engineer" />
+
+        <Box
+          sx={{
+            height: "100dvh",   // 🔥 dynamic viewport height
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+
+          {/* MAP */}
+          <MapContainer
+            center={[15.2993, 74.124]}
+            zoom={12}
+            style={{
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <TileLayer
+              attribution="© OpenStreetMap contributors"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <LocationMarker setPosition={setPosition} />
+            <RecenterMap position={position} />
+            {position && <Marker position={position} />}
+          </MapContainer>
+
+          {/* SEARCH BAR */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 80,
+              left: 16,
+              right: 16,
+              zIndex: 1000,
+              display: "flex",
+              gap: 1,
+            }}
+          >
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search location..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ backgroundColor: "#fff", borderRadius: 1 }}
+            />
+            <Button variant="contained" onClick={handleSearch}>
+              Go
+            </Button>
+          </Box>
+
+          {/* CONFIRM BUTTON */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: "env(safe-area-inset-bottom, 20px)",
+              left: 16,
+              right: 16,
+              zIndex: 1000,
+            }}
+          >
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={!position}
+              onClick={handleConfirm}
+              sx={{
+                py: 1.8,
+                borderRadius: 3,
+                fontWeight: 600,
+                boxShadow: "0 6px 16px rgba(0,0,0,0.3)",
+              }}
+            >
+              Confirm Location
+            </Button>
+          </Box>
+
+        </Box>
+      </>
+    );
+  }
+
+  /* ================= DESKTOP VERSION ================= */
+
   return (
     <>
       <Navbar role="engineer" />
 
-      {/* ===== PAGE BACKGROUND (NO BLUR) ===== */}
       <Box
         sx={{
           minHeight: "100vh",
-          fontFamily: "'Poppins', sans-serif",
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           p: 3,
           position: "relative",
-
-          // ⭐ overlay without blur
           "&::before": {
             content: '""',
             position: "absolute",
@@ -109,8 +210,6 @@ export default function MapView() {
         }}
       >
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-
-          {/* ===== CARD (no glass blur) ===== */}
           <Paper
             elevation={10}
             sx={{
@@ -120,12 +219,7 @@ export default function MapView() {
               textAlign: "center"
             }}
           >
-            <Typography
-              variant="h5"
-              fontWeight={600}
-              letterSpacing={1.2}
-              gutterBottom
-            >
+            <Typography variant="h5" gutterBottom>
               Mark Leakage Location
             </Typography>
 
@@ -133,7 +227,7 @@ export default function MapView() {
               <TextField
                 fullWidth
                 size="small"
-                placeholder="Search location (e.g. Margao, Goa)"
+                placeholder="Search location"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -142,19 +236,11 @@ export default function MapView() {
               </Button>
             </Box>
 
-            {/* ===== MAP ===== */}
-            <Box
-              sx={{
-                mt: 2,
-                borderRadius: 3,
-                overflow: "hidden"
-              }}
-            >
+            <Box sx={{ borderRadius: 3, overflow: "hidden" }}>
               <MapContainer
                 center={[15.2993, 74.124]}
                 zoom={12}
                 style={{ height: "420px", width: "100%" }}
-                whenCreated={(map) => (mapRef.current = map)}
               >
                 <TileLayer
                   attribution="© OpenStreetMap contributors"
@@ -168,19 +254,14 @@ export default function MapView() {
 
             <Button
               variant="contained"
-              sx={{
-                mt: 3,
-                borderRadius: 2,
-                fontWeight: 600,
-                px: 4
-              }}
+              sx={{ mt: 3 }}
               disabled={!position}
               onClick={handleConfirm}
             >
               Confirm Location
             </Button>
           </Paper>
-        </Container>
+        </Container> 
       </Box>
     </>
   );
