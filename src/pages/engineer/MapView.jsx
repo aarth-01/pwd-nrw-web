@@ -61,6 +61,7 @@ export default function MapView() {
 
   const [position, setPosition] = useState(null);
   const [search, setSearch] = useState("");
+
   const mapRef = useRef(null);
   const navigate = useNavigate();
 
@@ -102,30 +103,37 @@ export default function MapView() {
 
         <Box
           sx={{
-            height: "100dvh",   // 🔥 dynamic viewport height
+            height: "100vh",   // ✅ fixed (removed dvh)
             width: "100%",
             position: "relative",
-            overflow: "hidden",
+            overflow: "hidden"
           }}
         >
-
           {/* MAP */}
-          <MapContainer
-            center={[15.2993, 74.124]}
-            zoom={12}
-            style={{
-              height: "100%",
-              width: "100%",
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 1
             }}
           >
-            <TileLayer
-              attribution="© OpenStreetMap contributors"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <LocationMarker setPosition={setPosition} />
-            <RecenterMap position={position} />
-            {position && <Marker position={position} />}
-          </MapContainer>
+            <MapContainer
+              center={[15.2993, 74.124]}
+              zoom={12}
+              style={{ height: "100%", width: "100%" }}
+              whenCreated={(map) => {
+                mapRef.current = map;
+              }}
+            >
+              <TileLayer
+                attribution="© OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <LocationMarker setPosition={setPosition} />
+              <RecenterMap position={position} />
+              {position && <Marker position={position} />}
+            </MapContainer>
+          </Box>
 
           {/* SEARCH BAR */}
           <Box
@@ -134,9 +142,9 @@ export default function MapView() {
               top: 80,
               left: 16,
               right: 16,
-              zIndex: 1000,
+              zIndex: 2000,
               display: "flex",
-              gap: 1,
+              gap: 1
             }}
           >
             <TextField
@@ -152,14 +160,14 @@ export default function MapView() {
             </Button>
           </Box>
 
-          {/* CONFIRM BUTTON */}
+          {/* CONFIRM BUTTON - FIXED POSITION */}
           <Box
             sx={{
-              position: "absolute",
-              bottom: "env(safe-area-inset-bottom, 20px)",
+              position: "fixed",   // ✅ important
+              bottom: 20,
               left: 16,
               right: 16,
-              zIndex: 1000,
+              zIndex: 9999
             }}
           >
             <Button
@@ -172,13 +180,12 @@ export default function MapView() {
                 py: 1.8,
                 borderRadius: 3,
                 fontWeight: 600,
-                boxShadow: "0 6px 16px rgba(0,0,0,0.3)",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.35)"
               }}
             >
               Confirm Location
             </Button>
           </Box>
-
         </Box>
       </>
     );
@@ -261,7 +268,7 @@ export default function MapView() {
               Confirm Location
             </Button>
           </Paper>
-        </Container> 
+        </Container>
       </Box>
     </>
   );
