@@ -16,6 +16,11 @@ import {
   Divider,
 } from "@mui/material";
 
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
+
+import { useTheme, useMediaQuery } from "@mui/material";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MapIcon from "@mui/icons-material/Map";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -39,8 +44,42 @@ export default function Navbar({ role }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const openProfile = Boolean(anchorEl);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   useEffect(() => {
+
     setActiveTab(location.pathname);
+
+    const syncOfflineData = async () => {
+
+      const queue = JSON.parse(localStorage.getItem("offlineLeakages")) || [];
+
+      if (queue.length === 0) return;
+
+      try {
+
+        for (const item of queue) {
+          await addDoc(collection(db, "leakages"), item);
+        }
+
+        localStorage.removeItem("offlineLeakages");
+
+        console.log("Offline leakages synced successfully");
+
+      } catch (error) {
+
+        console.log("Sync failed:", error);
+
+      }
+    };
+
+    window.addEventListener("online", syncOfflineData);
+
+    return () => {
+      window.removeEventListener("online", syncOfflineData);
+    };
+
   }, [location.pathname]);
 
   const drawerWidth = collapsed ? 60 : 180;
@@ -72,26 +111,34 @@ export default function Navbar({ role }) {
         }}
       >
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, letterSpacing: 1 }}>
-            DDW-NRW : Real Losses
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              letterSpacing: 1,
+              fontSize: isMobile ? 18 : 20
+            }}
+            >
+            {isMobile ? "DDW-NRW" : "DDW-NRW : Real Losses"}
           </Typography>
 
           {/* ENGINEER MENU */}
           {role === "engineer" && (
             <>
-              {engineerMenu.map((item) => (
-                <Button
-                  key={item.text}
-                  color="inherit"
-                  sx={{
-                    fontWeight:
-                      activeTab === item.path ? "bold" : "normal",
-                  }}
-                  onClick={() => navigate(item.path)}
-                >
-                  {item.text}
-                </Button>
-              ))}
+              {!isMobile &&
+                engineerMenu.map((item) => (
+                  <Button
+                    key={item.text}
+                    color="inherit"
+                    sx={{
+                      fontWeight: activeTab === item.path ? "bold" : "normal",
+                    }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.text}
+                  </Button>
+                ))
+              }
 
               {/* PROFILE BUTTON */}
               <IconButton
@@ -115,6 +162,13 @@ export default function Navbar({ role }) {
                   },
                 }}
               >
+                <MenuItem onClick={() => navigate("/engineer/leakage-form")}>
+                  New Leakage
+                </MenuItem>
+
+                {/* <MenuItem onClick={() => navigate("/engineer/map")}>
+                  Map
+                </MenuItem> */}
                 <MenuItem
                   onClick={() => {
                     navigate("/engineer/recent-leakages");

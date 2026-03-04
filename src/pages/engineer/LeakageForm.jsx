@@ -21,6 +21,12 @@ import bg from "../../assets/bg-front.jpg";
 
 const auth = getAuth();
 
+const saveOfflineLeakage = (data) => {
+  const queue = JSON.parse(localStorage.getItem("offlineLeakages")) || [];
+  queue.push(data);
+  localStorage.setItem("offlineLeakages", JSON.stringify(queue));
+};
+
 export default function LeakageForm() {
 
   const theme = useTheme();
@@ -105,6 +111,7 @@ export default function LeakageForm() {
 
   const handleSubmit = async () => {
     try {
+
       const UID = auth.currentUser.uid;
 
       const totalMinutes =
@@ -114,7 +121,7 @@ export default function LeakageForm() {
       const estimatedLoss =
         Number(formData.lpm || 0) * totalMinutes;
 
-      await addDoc(collection(db, "leakages"), {
+      const leakageData = {
         engineerId: UID,
         ...formData,
         durationMinutes: totalMinutes,
@@ -127,8 +134,26 @@ export default function LeakageForm() {
             }
           : null,
         waterLoss: estimatedLoss,
-        timestamp: serverTimestamp(),
-      });
+        timestamp: new Date(),
+      };
+
+      /* ===== If internet available ===== */
+
+      if (navigator.onLine) {
+
+        await addDoc(collection(db, "leakages"), {
+          ...leakageData,
+          timestamp: serverTimestamp(),
+        });
+
+      } else {
+
+        /* ===== Save locally ===== */
+
+        saveOfflineLeakage(leakageData);
+
+        alert("No internet. Leakage saved offline and will sync later.");
+      }
 
       navigate("/engineer/success", {
         state: {
@@ -143,86 +168,235 @@ export default function LeakageForm() {
     }
   };
 
-  /* ================= MOBILE UI ================= */
+ /* ================= MOBILE UI ================= */
 
-  if (isMobile) {
-    return (
-      <>
-        <Navbar role="engineer" />
+if (isMobile) {
+  return (
+    <>
+      <Navbar role="engineer" />
 
-        <Box sx={{ minHeight: "100vh", background: "#f4f6f9", pb: 10 }}>
-          <Container maxWidth="sm" sx={{ pt: 2 }}>
+      <Box sx={{ minHeight: "100vh", background: "#f4f6f9", pb: 10 }}>
+        <Container maxWidth="sm" sx={{ pt: 2 }}>
 
-            <Typography variant="h6" textAlign="center" mb={2}>
-              Leakage Entry
+          <Typography variant="h6" textAlign="center" mb={2}>
+            Leakage Entry
+          </Typography>
+
+          {loadingLocation && (
+            <Typography sx={{ fontSize: 13, color: "blue" }}>
+              📍 Capturing location...
             </Typography>
+          )}
 
-            {loadingLocation && (
-              <Typography sx={{ fontSize: 13, color: "blue" }}>
-                📍 Capturing location...
-              </Typography>
-            )}
+          {selectedLocation && (
+            <Typography sx={{ fontSize: 13, color: "green", mb: 1 }}>
+              📍 {address || "Fetching address..."}
+            </Typography>
+          )}
 
-            {selectedLocation && (
-              <Typography sx={{ fontSize: 13, color: "green", mb: 1 }}>
-                📍 {address || "Fetching address..."}
-              </Typography>
-            )}
-
-            <Button
-              fullWidth
-              variant="outlined"
-              size="small"
-              sx={{ mb: 2 }}
-              onClick={() => navigate("/engineer/map")}
-            >
-              Adjust Location on Map
-            </Button>
-
-            {/* Compact Fields */}
-            {[
-              { name: "pipelineType", label: "Pipeline Type" },
-              { name: "lpm", label: "LPM", type: "number" },
-              { name: "pressure", label: "Water Pressure" },
-              { name: "diameter", label: "Diameter" },
-              { name: "plumberName", label: "Plumber Name" },
-            ].map((field) => (
-              <TextField
-                key={field.name}
-                fullWidth
-                size="small"
-                margin="dense"
-                label={field.label}
-                name={field.name}
-                value={formData[field.name]}
-                onChange={handleChange}
-                type={field.type || "text"}
-              />
-            ))}
-
-          </Container>
-
-          {/* Sticky Button */}
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              width: "100%",
-              p: 2,
-              backgroundColor: "#fff",
-              boxShadow: "0 -2px 10px rgba(0,0,0,0.1)"
-            }}
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            sx={{ mb: 2 }}
+            onClick={() => navigate("/engineer/map")}
           >
-            <Button fullWidth variant="contained" size="large" onClick={handleSubmit}>
-              Submit Leakage
-            </Button>
-          </Box>
-        </Box>
-      </>
-    );
-  }
+            Adjust Location on Map
+          </Button>
 
+          {/* Constituency */}
+          <TextField
+            select
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Constituency"
+            name="constituency"
+            value={formData.constituency}
+            onChange={handleChange}
+          >
+            <MenuItem value="Margao">Margao</MenuItem>
+            <MenuItem value="Fatorda">Fatorda</MenuItem>
+            <MenuItem value="Benaulim">Benaulim</MenuItem>
+          </TextField>
+
+          {/* Leakage Type */}
+          <TextField
+            select
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Leakage Type"
+            name="leakageType"
+            value={formData.leakageType}
+            onChange={handleChange}
+          >
+            <MenuItem value="Breakdown">Breakdown</MenuItem>
+            <MenuItem value="Corrosion">Corrosion</MenuItem>
+            <MenuItem value="Manmade">Man-made</MenuItem>
+            <MenuItem value="Aging">Aging</MenuItem>
+          </TextField>
+
+          {/* Pipeline Type */}
+          <TextField
+            select
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Pipeline Type"
+            name="pipelineType"
+            value={formData.pipelineType}
+            onChange={handleChange}
+          >
+            <MenuItem value="GI">GI</MenuItem>
+            <MenuItem value="PVC">PVC</MenuItem>
+            <MenuItem value="DI">DI</MenuItem>
+            <MenuItem value="HDPE">HDPE</MenuItem>
+          </TextField>
+
+          {/* Days + Hours */}
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              margin="dense"
+              label="Days"
+              name="days"
+              type="number"
+              value={formData.days}
+              onChange={handleChange}
+            />
+
+            <TextField
+              fullWidth
+              size="small"
+              margin="dense"
+              label="Hours"
+              name="hours"
+              type="number"
+              value={formData.hours}
+              onChange={handleChange}
+            />
+          </Box>
+
+          {/* LPM */}
+          <TextField
+            fullWidth
+            size="small"
+            margin="dense"
+            label="LPM"
+            name="lpm"
+            type="number"
+            value={formData.lpm}
+            onChange={handleChange}
+          />
+
+          {/* Pressure */}
+          <TextField
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Water Pressure"
+            name="pressure"
+            value={formData.pressure}
+            onChange={handleChange}
+          />
+
+          {/* Diameter */}
+          <TextField
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Diameter"
+            name="diameter"
+            value={formData.diameter}
+            onChange={handleChange}
+          />
+
+          {/* Plumber Name */}
+          <TextField
+            fullWidth
+            size="small"
+            margin="dense"
+            label="Plumber Name"
+            name="plumberName"
+            value={formData.plumberName}
+            onChange={handleChange}
+          />
+
+          {/* Image Upload */}
+          <Typography sx={{ mt: 2, fontSize: 14 }}>
+            Upload Leakage Image
+          </Typography>
+
+          <TextField
+            fullWidth
+            type="file"
+            size="small"
+            margin="dense"
+            inputProps={{ accept: "image/*", capture: "environment" }}
+            onChange={(e) => {
+              const files = Array.from(e.target.files);
+              if (files.length > 0) {
+                setImageFiles(files);
+                setPreviews(files.map(file => URL.createObjectURL(file)));
+              }
+            }}
+          />
+
+          {/* Image Preview */}
+          {previews.length > 0 && (
+            <Box
+              sx={{
+                mt: 1,
+                display: "flex",
+                gap: 1,
+                overflowX: "auto"
+              }}
+            >
+              {previews.map((src, index) => (
+                <img
+                  key={index}
+                  src={src}
+                  alt="preview"
+                  style={{
+                    width: 90,
+                    height: 90,
+                    objectFit: "cover",
+                    borderRadius: 8
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+
+        </Container>
+
+        {/* Sticky Button */}
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            p: 2,
+            backgroundColor: "#fff",
+            boxShadow: "0 -2px 10px rgba(0,0,0,0.1)"
+          }}
+        >
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            onClick={handleSubmit}
+          >
+            Submit Leakage
+          </Button>
+        </Box>
+      </Box>
+    </>
+  );
+}
   /* ================= DESKTOP UI (UNCHANGED) ================= */
 
   return (
