@@ -43,12 +43,14 @@ function RecenterMap({ position }) {
 
 export default function AdminMapView() {
   const [selectedConstituency, setSelectedConstituency] = useState("All");
-  const [selectedDate, setSelectedDate] = useState("");
+
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   const [leakages, setLeakages] = useState([]);
   const [search, setSearch] = useState("");
   const [searchPosition, setSearchPosition] = useState(null);
 
-  /* Fetch Firestore */
   useEffect(() => {
     const fetchLeakages = async () => {
       try {
@@ -68,23 +70,30 @@ export default function AdminMapView() {
     fetchLeakages();
   }, []);
 
-  /* Filtering */
   const filteredLeakages = leakages.filter((item) => {
     const constituencyMatch =
       selectedConstituency === "All" ||
       item.constituency === selectedConstituency;
 
-    let itemDate = "";
+    let itemDate = null;
+
     if (item.timestamp?.toDate) {
-      itemDate = item.timestamp.toDate().toISOString().split("T")[0];
+      itemDate = item.timestamp.toDate();
     }
 
-    const dateMatch = !selectedDate || itemDate === selectedDate;
+    let dateMatch = true;
+
+    if (fromDate && itemDate) {
+      dateMatch = itemDate >= new Date(fromDate);
+    }
+
+    if (toDate && itemDate) {
+      dateMatch = dateMatch && itemDate <= new Date(toDate);
+    }
 
     return constituencyMatch && dateMatch;
   });
 
-  /* Search Location */
   const handleSearch = async () => {
     if (!search.trim()) return;
 
@@ -116,13 +125,14 @@ export default function AdminMapView() {
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          py: 4,
-          pl: { md: "260px" }, // space for sidebar
+          pt: { xs: 10, md: 4 },
+          pb: 4,
+          pl: { md: "260px" },
         }}
       >
         <Container maxWidth="lg">
 
-          {/* Title */}
+          {/* TITLE */}
           <Paper
             sx={{
               p: 3,
@@ -131,12 +141,16 @@ export default function AdminMapView() {
               backgroundColor: "rgba(255,255,255,0.95)",
             }}
           >
-            <Typography variant="h5" fontWeight="bold">
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              sx={{ textAlign: { xs: "center", md: "left" } }}
+            >
               Leakage Locations – Constituency View
             </Typography>
           </Paper>
 
-          {/* Filters */}
+          {/* FILTERS */}
           <Paper
             sx={{
               p: 3,
@@ -146,11 +160,14 @@ export default function AdminMapView() {
             }}
           >
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+
+              {/* Area */}
+              <Grid item xs={4}>
                 <TextField
                   select
                   fullWidth
-                  label="Constituency"
+                  size="small"
+                  label="Area"
                   value={selectedConstituency}
                   onChange={(e) => setSelectedConstituency(e.target.value)}
                 >
@@ -161,20 +178,36 @@ export default function AdminMapView() {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              {/* From */}
+              <Grid item xs={4}>
                 <TextField
                   type="date"
                   fullWidth
-                  label="Date"
+                  size="small"
+                  label="From"
                   InputLabelProps={{ shrink: true }}
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
                 />
               </Grid>
+
+              {/* To */}
+              <Grid item xs={4}>
+                <TextField
+                  type="date"
+                  fullWidth
+                  size="small"
+                  label="To"
+                  InputLabelProps={{ shrink: true }}
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </Grid>
+
             </Grid>
           </Paper>
 
-          {/* Search */}
+          {/* SEARCH */}
           <Paper
             sx={{
               p: 2,
@@ -183,7 +216,13 @@ export default function AdminMapView() {
               backgroundColor: "rgba(255,255,255,0.95)",
             }}
           >
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                flexDirection: { xs: "column", md: "row" },
+              }}
+            >
               <TextField
                 fullWidth
                 size="small"
@@ -191,8 +230,13 @@ export default function AdminMapView() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <Button variant="outlined" onClick={handleSearch}>
-                Search
+
+              <Button
+                variant="outlined"
+                onClick={handleSearch}
+                sx={{ minWidth: "120px" }}
+              >
+                SEARCH
               </Button>
             </Box>
           </Paper>

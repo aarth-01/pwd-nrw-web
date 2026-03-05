@@ -25,7 +25,7 @@ import bg from "../../assets/LBB.jpg";
 
 import {
   collection,
-  addDoc,
+  setDoc,
   getDocs,
   deleteDoc,
   doc,
@@ -34,15 +34,16 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function AddEngineer() {
   const [showForm, setShowForm] = useState(false);
   const [successMsg, setSuccessMsg] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-
   const [engineers, setEngineers] = useState([]);
+  const [generatedPassword, setGeneratedPassword] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -50,7 +51,6 @@ export default function AddEngineer() {
     constituency: "",
   });
 
-  // 🔥 FETCH ENGINEERS FROM FIRESTORE
   useEffect(() => {
     fetchEngineers();
   }, []);
@@ -78,33 +78,59 @@ export default function AddEngineer() {
     });
   };
 
-  // 🔥 ADD ENGINEER
+  // Generate temporary password
+  const generatePassword = () => {
+    return "PWD@" + Math.floor(1000 + Math.random() * 9000);
+  };
+
+  // ADD ENGINEER (Auth + Firestore)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await addDoc(collection(db, "users"), {
-        ...formData,
+      const tempPassword = generatePassword();
+
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        tempPassword
+      );
+
+      const uid = userCredential.user.uid;
+
+      // Save user in Firestore
+      await setDoc(doc(db, "users", uid), {
+        name: formData.name,
+        email: formData.email,
+        constituency: formData.constituency,
         role: "engineer",
+        mustChangePassword: true,
         createdAt: serverTimestamp(),
       });
 
-      setFormData({ name: "", email: "", constituency: "" });
+      setGeneratedPassword(tempPassword);
+
+      setFormData({
+        name: "",
+        email: "",
+        constituency: "",
+      });
+
       setShowForm(false);
       fetchEngineers();
 
     } catch (error) {
       console.log(error);
+      alert(error.message);
     }
   };
 
-  // OPEN CONFIRM DIALOG
   const handleDeleteClick = (id) => {
     setDeleteId(id);
     setOpenDialog(true);
   };
 
-  // 🔥 DELETE ENGINEER
   const confirmDelete = async () => {
     try {
       await deleteDoc(doc(db, "users", deleteId));
@@ -275,6 +301,7 @@ export default function AddEngineer() {
         </Container>
       </Box>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
@@ -287,6 +314,23 @@ export default function AddEngineer() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Temporary Password Dialog */}
+      {generatedPassword && (
+        <Dialog open={true}>
+          <DialogTitle>Engineer Account Created</DialogTitle>
+          <DialogContent>
+            Temporary Password:
+            <Typography sx={{ fontWeight: "bold", mt: 1 }}>
+              {generatedPassword}
+            </Typography>
+            Share this with the engineer.
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setGeneratedPassword("")}>OK</Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       <Snackbar
         open={successMsg}

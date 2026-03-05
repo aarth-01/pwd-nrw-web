@@ -10,7 +10,6 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,14 +18,17 @@ import sideImage from "../assets/front-image .jpg";
 import logo from "../assets/logo.jpg";
 
 export default function Login() {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+
     try {
-      //  Firebase Authentication
+
+      // 🔐 Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -35,7 +37,7 @@ export default function Login() {
 
       const uid = userCredential.user.uid;
 
-      // Get role from Firestore
+      // 📄 Fetch user data from Firestore
       const userDoc = await getDoc(doc(db, "users", uid));
 
       if (!userDoc.exists()) {
@@ -43,18 +45,34 @@ export default function Login() {
         return;
       }
 
-      const role = userDoc.data().role;
+      const userData = userDoc.data();
+      const role = userData.role;
 
-      //  Redirect based on role
+      // 🔒 Force password change
+      if (userData.mustChangePassword) {
+
+        navigate("/change-password");
+        return;
+
+      }
+
+      // 🚦 Redirect based on role
       if (role === "admin") {
+
         navigate("/admin/dashboard");
+
       } else {
+
         navigate("/engineer/leakage-form");
+
       }
 
     } catch (error) {
+
       alert(error.message);
+
     }
+
   };
 
 
@@ -65,8 +83,6 @@ export default function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-
-        /* water background */
         backgroundImage: `
           linear-gradient(rgba(0,90,130,0.35), rgba(0,90,130,0.35)),
           url(${bg})
@@ -75,7 +91,7 @@ export default function Login() {
         backgroundPosition: "center"
       }}
     >
-      {/* simple row layout */}
+
       <Box
         sx={{
           display: "flex",
@@ -87,7 +103,9 @@ export default function Login() {
           flexDirection: { xs: "column", md: "row" }
         }}
       >
-        {/* ================= LOGIN (same style as your original) ================= */}
+
+        {/* LOGIN FORM */}
+
         <Container
           sx={{
             flex: 1.2,
@@ -102,7 +120,7 @@ export default function Login() {
             src={logo}
             alt="PWD Logo"
             sx={{
-              width: { xs: 180, md: 240 }, // bigger
+              width: { xs: 180, md: 240 },
               height: "auto",
               mb: 2,
               mx: "auto",
@@ -140,9 +158,11 @@ export default function Login() {
           >
             LOGIN
           </Button>
+
         </Container>
 
-        {/* ================= RIGHT IMAGE ================= */}
+        {/* RIGHT IMAGE */}
+
         <Box
           sx={{
             flex: 1,
@@ -152,6 +172,7 @@ export default function Login() {
             backgroundPosition: "center"
           }}
         />
+
       </Box>
     </Box>
   );

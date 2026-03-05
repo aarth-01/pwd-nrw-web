@@ -30,6 +30,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DescriptionIcon from "@mui/icons-material/Description";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -46,6 +47,8 @@ export default function Navbar({ role }) {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
 
@@ -107,10 +110,22 @@ export default function Navbar({ role }) {
       <AppBar
         position="static"
         sx={{
-          background: "linear-gradient(90deg, #1e3c72, #2a5298)", // MATCHED SIDEBAR COLOR
+          background: "linear-gradient(90deg, #1e3c72, #2a5298)",
         }}
       >
         <Toolbar>
+
+          {/* MOBILE ADMIN MENU BUTTON */}
+          {role === "admin" && isMobile && (
+            <IconButton
+              color="inherit"
+              onClick={() => setMobileOpen(true)}
+              sx={{ mr: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
           <Typography
             variant="h6"
             sx={{
@@ -118,13 +133,14 @@ export default function Navbar({ role }) {
               letterSpacing: 1,
               fontSize: isMobile ? 18 : 20
             }}
-            >
+          >
             {isMobile ? "DDW-NRW" : "DDW-NRW : Real Losses"}
           </Typography>
 
           {/* ENGINEER MENU */}
           {role === "engineer" && (
             <>
+              {/* DESKTOP ENGINEER MENU */}
               {!isMobile &&
                 engineerMenu.map((item) => (
                   <Button
@@ -140,62 +156,74 @@ export default function Navbar({ role }) {
                 ))
               }
 
-              {/* PROFILE BUTTON */}
-              <IconButton
-                color="inherit"
-                onClick={(e) => setAnchorEl(e.currentTarget)}
-                sx={{ ml: 1 }}
-              >
-                <AccountCircleIcon sx={{ fontSize: 30 }} />
-              </IconButton>
-
-              {/* PROFILE MENU */}
-              <Menu
-                anchorEl={anchorEl}
-                open={openProfile}
-                onClose={() => setAnchorEl(null)}
-                PaperProps={{
-                  sx: {
-                    borderRadius: 3,
-                    minWidth: 200,
-                    p: 1,
-                  },
-                }}
-              >
-                <MenuItem onClick={() => navigate("/engineer/leakage-form")}>
-                  New Leakage
-                </MenuItem>
-
-                {/* <MenuItem onClick={() => navigate("/engineer/map")}>
-                  Map
-                </MenuItem> */}
-                <MenuItem
-                  onClick={() => {
-                    navigate("/engineer/recent-leakages");
-                    setAnchorEl(null);
-                  }}
-                >
-                  <ListItemIcon>
-                    <DescriptionIcon />
-                  </ListItemIcon>
-                  View Recent Leakages
-                </MenuItem>
-
-                <Divider />
-
-                <MenuItem
+              {/* DESKTOP LOGOUT BUTTON */}
+              {!isMobile && (
+                <Button
+                  color="inherit"
+                  startIcon={<LogoutIcon />}
+                  sx={{ ml: 2, fontWeight: "bold" }}
                   onClick={handleLogout}
-                  sx={{
-                    color: "red",
-                    fontWeight: "bold",
-                  }}
                 >
-                  <ListItemIcon sx={{ color: "red" }}>
-                    <LogoutIcon />
-                  </ListItemIcon>
                   Logout
-                </MenuItem>
-              </Menu>
+                </Button>
+              )}
+
+              {/* MOBILE PROFILE ICON */}
+              {isMobile && (
+                <>
+                  <IconButton
+                    color="inherit"
+                    onClick={(e) => setAnchorEl(e.currentTarget)}
+                    sx={{ ml: 1 }}
+                  >
+                    <AccountCircleIcon sx={{ fontSize: 30 }} />
+                  </IconButton>
+
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={openProfile}
+                    onClose={() => setAnchorEl(null)}
+                    PaperProps={{
+                      sx: {
+                        borderRadius: 3,
+                        minWidth: 200,
+                        p: 1,
+                      },
+                    }}
+                  >
+                    <MenuItem onClick={() => navigate("/engineer/leakage-form")}>
+                      🗒️   New Leakage
+                    </MenuItem>
+
+                    <MenuItem
+                      onClick={() => {
+                        navigate("/engineer/recent-leakages");
+                        setAnchorEl(null);
+                      }}
+                    >
+                      <ListItemIcon>
+                        <DescriptionIcon />
+                      </ListItemIcon>
+                      View Recent Leakages
+                    </MenuItem>
+
+                    <Divider />
+
+                    <MenuItem
+                      onClick={handleLogout}
+                      sx={{
+                        color: "red",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: "red" }}>
+                        <LogoutIcon />
+                      </ListItemIcon>
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
             </>
           )}
         </Toolbar>
@@ -204,7 +232,9 @@ export default function Navbar({ role }) {
       {/* ================= ADMIN SIDEBAR ================= */}
       {role === "admin" && (
         <Drawer
-          variant="permanent"
+          variant={isMobile ? "temporary" : "permanent"}
+          open={isMobile ? mobileOpen : true}
+          onClose={() => setMobileOpen(false)}
           anchor="left"
           sx={{
             width: drawerWidth,
@@ -247,7 +277,10 @@ export default function Navbar({ role }) {
                 return (
                   <ListItem key={item.text} disablePadding>
                     <ListItemButton
-                      onClick={() => navigate(item.path)}
+                      onClick={() => {
+                        navigate(item.path);
+                        if (isMobile) setMobileOpen(false);
+                      }}
                       sx={{
                         py: 1.5,
                         px: collapsed ? 1 : 2,
@@ -289,7 +322,6 @@ export default function Navbar({ role }) {
             </List>
           </Box>
 
-          {/* ADMIN LOGOUT */}
           <Box sx={{ p: 2 }}>
             <ListItemButton
               onClick={handleLogout}

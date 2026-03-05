@@ -10,7 +10,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'PWD Water Leakage Monitoring',
-        short_name: 'PWD NRW',
+        short_name: 'SVADS',
         description: 'Water Leakage Monitoring System for PWD',
         theme_color: '#0f2027',
         background_color: '#ffffff',

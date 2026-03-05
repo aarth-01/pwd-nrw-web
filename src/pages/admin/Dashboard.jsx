@@ -13,6 +13,8 @@ import {
   TextField,
   TablePagination,
   Button,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 import Navbar from "../../components/Navbar";
@@ -24,10 +26,16 @@ import { db } from "../../firebase";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+/* PIE CHART IMPORT */
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
 export default function Dashboard() {
   const [leakages, setLeakages] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [filters, setFilters] = useState({
     date: "",
@@ -37,7 +45,7 @@ export default function Dashboard() {
     durationMinutes: "",
     waterLoss: "",
     pressure: "",
-    location: "", // ✅ NEW FILTER
+    location: "",
   });
 
   /* ---------------- FETCH DATA ---------------- */
@@ -59,13 +67,14 @@ export default function Dashboard() {
   }, [filters]);
 
   /* ---------------- COLUMN FILTERS ---------------- */
-  const filteredTableData = useMemo(() => {
-    return leakages.filter((item) => {
+const filteredTableData = useMemo(() => {
+  return leakages
+    .filter((item) => {
       const date = item.timestamp?.toDate?.();
       const formattedDate = date ? date.toLocaleDateString() : "";
 
-      const waterLossMLD = item.waterLoss
-        ? (item.waterLoss / 1000000).toFixed(3)
+      const waterLossM3 = item.waterLoss
+        ? (item.waterLoss / 1000).toFixed(3)
         : "0.000";
 
       const locationString =
@@ -79,18 +88,53 @@ export default function Dashboard() {
         item.leakageType?.toLowerCase().includes(filters.leakageType.toLowerCase()) &&
         item.pipelineType?.toLowerCase().includes(filters.pipelineType.toLowerCase()) &&
         String(item.durationMinutes || "").includes(filters.durationMinutes) &&
-        waterLossMLD.includes(filters.waterLoss) &&
+        waterLossM3.includes(filters.waterLoss) &&
         String(item.pressure || "").includes(filters.pressure) &&
-        locationString.includes(filters.location) // ✅ LOCATION FILTER
+        locationString.includes(filters.location)
       );
+    })
+
+    /* 🔥 ADD THIS SORTING PART */
+    .sort((a, b) => {
+      const dateA = a.timestamp?.toDate?.() || new Date(0);
+      const dateB = b.timestamp?.toDate?.() || new Date(0);
+
+      return dateB - dateA; // DESCENDING (latest first)
     });
-  }, [leakages, filters]);
+
+}, [leakages, filters]);
 
   /* ---------------- PAGINATION ---------------- */
   const paginatedData = filteredTableData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  /* ---------------- PIE CHART DATA ---------------- */
+  const constituencyData = useMemo(() => {
+    const counts = {};
+
+    leakages.forEach((item) => {
+
+      /* REMOVE UNKNOWN FROM PIE CHART */
+      if (!item.constituency || item.constituency === "Unknown") return;
+
+      const name = item.constituency;
+      counts[name] = (counts[name] || 0) + 1;
+    });
+
+    return Object.keys(counts).map((key) => ({
+      name: key,
+      value: counts[key],
+    }));
+  }, [leakages]);
+
+  /* 🔵 LIGHT BLUE SHADES FOR PIE CHART */
+  const COLORS = [
+    "#0d47a1",
+    "#1e88e5",
+    "#bbdefb",
+  ];
 
   /* ---------------- EXPORT TO EXCEL ---------------- */
   const exportToExcel = () => {
@@ -102,14 +146,14 @@ export default function Dashboard() {
         LeakageType: item.leakageType,
         PipelineType: item.pipelineType,
         DurationMinutes: item.durationMinutes,
-        WaterLoss_MLD: item.waterLoss
-          ? (item.waterLoss / 1000000).toFixed(3)
+        WaterLoss_m3: item.waterLoss
+          ? (item.waterLoss / 1000).toFixed(3)
           : "0.000",
         Pressure: item.pressure,
         ExactLocation:
           item.latitude && item.longitude
             ? `${item.latitude}, ${item.longitude}`
-            : "N/A", // ✅ ADDED TO EXPORT
+            : "N/A",
       };
     });
 
@@ -140,32 +184,56 @@ export default function Dashboard() {
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
           py: 4,
+          pl: isMobile ? 1 : 10,
+          pr: 1,
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ px: isMobile ? 1 : 2 }}>
 
-          {/* HEADER + EXPORT BUTTON */}
+          {/* HEADER */}
           <Box
             display="flex"
-            justifyContent="space-between"
+            flexDirection="column"
             alignItems="center"
+            textAlign="center"
             mb={3}
           >
-            <Typography variant="h4" fontWeight="bold">
+            <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
               Welcome Back Admin!
             </Typography>
-
-            <Button
-              variant="contained"
-              color="success"
-              onClick={exportToExcel}
-            >
-              Export to Excel
-            </Button>
           </Box>
 
-          <TableContainer component={Paper}>
-            <Table stickyHeader>
+          {/* PIE CHART */}
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" textAlign="center" mb={2}>
+              Leakage Reports by Constituency
+            </Typography>
+
+            <Box height={300}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={constituencyData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={100}
+                    label={({ value }) => value}
+                  >
+                    {constituencyData.map((entry, index) => (
+                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
+          </Paper>
+
+          {/* TABLE */}
+          <TableContainer component={Paper} sx={{ width: "100%", overflowX: "auto" }}>
+            <Table stickyHeader size={isMobile ? "small" : "medium"}>
               <TableHead>
                 <TableRow>
                   <TableCell><b>Date</b></TableCell>
@@ -173,12 +241,11 @@ export default function Dashboard() {
                   <TableCell><b>Leakage Type</b></TableCell>
                   <TableCell><b>Pipeline</b></TableCell>
                   <TableCell><b>Duration</b></TableCell>
-                  <TableCell><b>Water Loss (MLD)</b></TableCell>
+                  <TableCell><b>Water Loss (m³)</b></TableCell>
                   <TableCell><b>Pressure</b></TableCell>
-                  <TableCell><b>Exact Location</b></TableCell> {/* ✅ NEW COLUMN */}
+                  <TableCell><b>Exact Location</b></TableCell>
                 </TableRow>
 
-                {/* FILTER ROW */}
                 <TableRow>
                   {Object.keys(filters).map((key) => (
                     <TableCell key={key}>
@@ -202,23 +269,20 @@ export default function Dashboard() {
               <TableBody>
                 {paginatedData.map((item) => {
                   const date = item.timestamp?.toDate?.();
-                  const waterLossMLD = item.waterLoss
-                    ? (item.waterLoss / 1000000).toFixed(3)
+                  const waterLossM3 = item.waterLoss
+                    ? (item.waterLoss / 1000).toFixed(3)
                     : "0.000";
 
                   return (
                     <TableRow key={item.id}>
-                      <TableCell>
-                        {date ? date.toLocaleDateString() : "N/A"}
-                      </TableCell>
+                      <TableCell>{date ? date.toLocaleDateString() : "N/A"}</TableCell>
                       <TableCell>{item.constituency}</TableCell>
                       <TableCell>{item.leakageType}</TableCell>
                       <TableCell>{item.pipelineType}</TableCell>
                       <TableCell>{item.durationMinutes}</TableCell>
-                      <TableCell>{waterLossMLD}</TableCell>
+                      <TableCell>{waterLossM3}</TableCell>
                       <TableCell>{item.pressure}</TableCell>
 
-                      {/* ✅ EXACT LOCATION COLUMN */}
                       <TableCell>
                         {item.latitude && item.longitude ? (
                           <a
@@ -250,6 +314,20 @@ export default function Dashboard() {
               }}
             />
           </TableContainer>
+
+          {/* EXPORT BUTTON */}
+          <Box textAlign="center" mt={3}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={exportToExcel}
+              fullWidth={isMobile}
+              sx={{ maxWidth: "300px" }}
+            >
+              Export to Excel
+            </Button>
+          </Box>
+          
         </Container>
       </Box>
     </>

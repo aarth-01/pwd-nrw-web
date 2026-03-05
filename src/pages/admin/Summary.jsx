@@ -40,7 +40,6 @@ ChartJS.register(
   Legend
 );
 
-// Helper for date formatting
 const formatDatePretty = (date) => {
   const day = date.getDate();
   const suffix =
@@ -52,20 +51,18 @@ const formatDatePretty = (date) => {
 };
 
 export default function Summary() {
+
   const [leakages, setLeakages] = useState([]);
 
   useEffect(() => {
     const fetchLeakages = async () => {
       const querySnapshot = await getDocs(collection(db, "leakages"));
-
       const data = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setLeakages(data);
     };
-
     fetchLeakages();
   }, []);
 
@@ -81,8 +78,11 @@ export default function Summary() {
     0
   );
 
-  // Constituency summary
+  /* 🔥 Convert litres → cubic meter */
+  const totalMonthlyLossM3 = (totalMonthlyLoss / 1000).toFixed(2);
+
   const constituencySummary = {};
+
   monthlyData.forEach(item => {
     if (!constituencySummary[item.constituency]) {
       constituencySummary[item.constituency] = { count: 0, loss: 0 };
@@ -95,15 +95,17 @@ export default function Summary() {
     labels: Object.keys(constituencySummary),
     datasets: [
       {
-        label: "Water Loss (litres)",
-        data: Object.values(constituencySummary).map(i => i.loss),
+        label: "Water Loss (m³)",
+        data: Object.values(constituencySummary).map(i =>
+          (i.loss / 1000).toFixed(2)
+        ),
         backgroundColor: "#1976d2",
       },
     ],
   };
 
-  // DAILY TREND WITH ZERO FILL
   const dailyLoss = {};
+
   monthlyData.forEach(item => {
     const date = item.timestamp.toDate();
     const key = date.toDateString();
@@ -111,7 +113,11 @@ export default function Summary() {
   });
 
   const today = new Date();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysInMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  ).getDate();
 
   const labels = [];
   const values = [];
@@ -121,14 +127,14 @@ export default function Summary() {
     const key = d.toDateString();
 
     labels.push(formatDatePretty(d));
-    values.push(dailyLoss[key] || 0);
+    values.push(((dailyLoss[key] || 0) / 1000).toFixed(2));
   }
 
   const lineChartData = {
     labels,
     datasets: [
       {
-        label: "Daily Water Loss",
+        label: "Daily Water Loss (m³)",
         data: values,
         borderColor: "#0d47a1",
         fill: false,
@@ -149,18 +155,20 @@ export default function Summary() {
         }}
       >
         <Container maxWidth="lg">
+
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Weekly / Monthly NRW Summary
           </Typography>
 
           {/* KPI */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
+
             <Grid item xs={12} md={3}>
               <Card>
                 <CardContent>
                   <Typography>Total Water Loss</Typography>
                   <Typography variant="h5">
-                    {totalMonthlyLoss} litres
+                    {totalMonthlyLossM3} m³
                   </Typography>
                 </CardContent>
               </Card>
@@ -176,9 +184,11 @@ export default function Summary() {
                 </CardContent>
               </Card>
             </Grid>
+
           </Grid>
 
           <Grid container spacing={4}>
+
             {/* TABLE */}
             <Grid item xs={12} md={4}>
               <Table sx={{ bgcolor: "rgba(255,255,255,0.9)" }}>
@@ -186,7 +196,7 @@ export default function Summary() {
                   <TableRow>
                     <TableCell>Constituency</TableCell>
                     <TableCell>No. Leakages</TableCell>
-                    <TableCell>Water Lost</TableCell>
+                    <TableCell>Water Lost (m³)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -194,26 +204,29 @@ export default function Summary() {
                     <TableRow key={key}>
                       <TableCell>{key}</TableCell>
                       <TableCell>{constituencySummary[key].count}</TableCell>
-                      <TableCell>{constituencySummary[key].loss}</TableCell>
+                      <TableCell>
+                        {(constituencySummary[key].loss / 1000).toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </Grid>
 
-            {/* CHARTS SIDE-BY-SIDE */}
+            {/* CHARTS */}
             <Grid item xs={12} md={8}>
               <Grid container spacing={3}>
+
                 <Grid item xs={12} md={6}>
                   <Box sx={{ bgcolor:"white", p:3, borderRadius:3, height:400 }}>
-                    <Typography>Constituency-wise Loss</Typography>
-                    <Bar data={barChartData} options={{maintainAspectRatio:false}}/>
+                    <Typography>Constituency-wise Loss (m³)</Typography>
+                    <Bar data={barChartData} options={{ maintainAspectRatio:false }} />
                   </Box>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
                   <Box sx={{ bgcolor:"white", p:3, borderRadius:3, height:400 }}>
-                    <Typography>Water Loss Trend</Typography>
+                    <Typography>Water Loss Trend (m³)</Typography>
                     <Line
                       data={lineChartData}
                       options={{
@@ -228,12 +241,14 @@ export default function Summary() {
                         },
                       }}
                     />
-
                   </Box>
                 </Grid>
+
               </Grid>
             </Grid>
+
           </Grid>
+
         </Container>
       </Box>
     </>
