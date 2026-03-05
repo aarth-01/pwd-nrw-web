@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
 import {
   Container,
   Typography,
@@ -51,6 +52,9 @@ export default function AddEngineer() {
     constituency: "",
   });
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   useEffect(() => {
     fetchEngineers();
   }, []);
@@ -67,6 +71,11 @@ export default function AddEngineer() {
       id: doc.id,
       ...doc.data(),
     }));
+
+    // Sort engineers alphabetically by name
+    data.sort((a, b) =>
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    );
 
     setEngineers(data);
   };
@@ -168,55 +177,127 @@ export default function AddEngineer() {
               boxShadow: 5,
             }}
           >
-            <Box display="flex" justifyContent="space-between" mb={4}>
-              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                {showForm ? "ADD ENGINEER" : "ENGINEER DETAILS"}
-              </Typography>
-
-              <Button
-                variant="contained"
-                onClick={() => setShowForm(!showForm)}
-                sx={{
-                  backgroundColor: "#0D47A1",
-                  "&:hover": { backgroundColor: "#08306B" },
-                }}
+            <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                flexWrap="wrap"
+                mb={4}
               >
-                {showForm ? "View Engineers" : "Add Engineer"}
-              </Button>
-            </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                    {showForm ? "ADD ENGINEER" : "ENGINEER DETAILS"}
+                  </Typography>
+
+                  {!showForm && (
+                    <Typography sx={{ color: "#555", mt: 0.5 }}>
+                      Total Engineers: <b>{engineers.length}</b>
+                    </Typography>
+                  )}
+                </Box>
+
+                <Button
+                  variant="contained"
+                  onClick={() => setShowForm(!showForm)}
+                  sx={{
+                    backgroundColor: "#0D47A1",
+                    "&:hover": { backgroundColor: "#08306B" },
+                    mt: { xs: 2, md: 0 }
+                  }}
+                >
+                  {showForm ? "View Engineers" : "Add Engineer"}
+                </Button>
+              </Box>
 
             {!showForm && (
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#0D47A1" }}>
-                    <TableCell sx={{ color: "white" }}>Sr No.</TableCell>
-                    <TableCell sx={{ color: "white" }}>Name</TableCell>
-                    <TableCell sx={{ color: "white" }}>Email</TableCell>
-                    <TableCell sx={{ color: "white" }}>Constituency</TableCell>
-                    <TableCell sx={{ color: "white" }}>Delete</TableCell>
-                  </TableRow>
-                </TableHead>
 
-                <TableBody>
+              isMobile ? (
+
+                /* ================= MOBILE CARD VIEW ================= */
+
+                <Box>
+
                   {engineers.map((eng, index) => (
-                    <TableRow key={eng.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{eng.name}</TableCell>
-                      <TableCell>{eng.email}</TableCell>
-                      <TableCell>{eng.constituency}</TableCell>
-                      <TableCell>
+
+                    <Paper
+                      key={eng.id}
+                      sx={{
+                        p: 2.5,
+                        mb: 2,
+                        borderRadius: 3,
+                        boxShadow: 2
+                      }}
+                    >
+
+                      <Typography fontWeight="bold" sx={{ fontSize: 16 }}>
+                        {eng.name}
+                      </Typography>
+
+                      <Typography sx={{ fontSize: 14, color: "#555", mt: 0.5 }}>
+                        {eng.email}
+                      </Typography>
+
+                      <Typography sx={{ mt: 1 }}>
+                        Constituency: <b>{eng.constituency}</b>
+                      </Typography>
+
+                      <Box sx={{ mt: 2 }}>
                         <Button
                           variant="contained"
                           color="error"
+                          fullWidth
                           onClick={() => handleDeleteClick(eng.id)}
                         >
                           Delete
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </Box>
+
+                    </Paper>
+
                   ))}
-                </TableBody>
-              </Table>
+
+                </Box>
+
+              ) : (
+
+                /* ================= DESKTOP TABLE (UNCHANGED) ================= */
+
+                <Table>
+
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: "#0D47A1" }}>
+                      <TableCell sx={{ color: "white" }}>Sr No.</TableCell>
+                      <TableCell sx={{ color: "white" }}>Name</TableCell>
+                      <TableCell sx={{ color: "white" }}>Email</TableCell>
+                      <TableCell sx={{ color: "white" }}>Constituency</TableCell>
+                      <TableCell sx={{ color: "white" }}>Delete</TableCell>
+                    </TableRow>
+                  </TableHead>
+
+                  <TableBody>
+                    {engineers.map((eng, index) => (
+                      <TableRow key={eng.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{eng.name}</TableCell>
+                        <TableCell>{eng.email}</TableCell>
+                        <TableCell>{eng.constituency}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleDeleteClick(eng.id)}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+
+                </Table>
+
+              )
+
             )}
 
             {showForm && (

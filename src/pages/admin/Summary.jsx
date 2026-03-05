@@ -10,7 +10,10 @@ import {
   TableHead,
   TableRow,
   Box,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
+
 import Navbar from "../../components/Navbar";
 import bg from "../../assets/LBB.jpg";
 
@@ -28,6 +31,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import { Bar, Line } from "react-chartjs-2";
 
 ChartJS.register(
@@ -42,10 +46,15 @@ ChartJS.register(
 
 const formatDatePretty = (date) => {
   const day = date.getDate();
+
   const suffix =
-    day % 10 === 1 && day !== 11 ? "st" :
-    day % 10 === 2 && day !== 12 ? "nd" :
-    day % 10 === 3 && day !== 13 ? "rd" : "th";
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+      ? "nd"
+      : day % 10 === 3 && day !== 13
+      ? "rd"
+      : "th";
 
   return `${day}${suffix} ${date.toLocaleString("default", { month: "short" })}`;
 };
@@ -54,15 +63,21 @@ export default function Summary() {
 
   const [leakages, setLeakages] = useState([]);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   useEffect(() => {
     const fetchLeakages = async () => {
       const querySnapshot = await getDocs(collection(db, "leakages"));
+
       const data = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
+
       setLeakages(data);
     };
+
     fetchLeakages();
   }, []);
 
@@ -78,15 +93,19 @@ export default function Summary() {
     0
   );
 
-  /* 🔥 Convert litres → cubic meter */
   const totalMonthlyLossM3 = (totalMonthlyLoss / 1000).toFixed(2);
 
   const constituencySummary = {};
 
   monthlyData.forEach(item => {
+
     if (!constituencySummary[item.constituency]) {
-      constituencySummary[item.constituency] = { count: 0, loss: 0 };
+      constituencySummary[item.constituency] = {
+        count: 0,
+        loss: 0
+      };
     }
+
     constituencySummary[item.constituency].count++;
     constituencySummary[item.constituency].loss += item.waterLoss || 0;
   });
@@ -107,12 +126,15 @@ export default function Summary() {
   const dailyLoss = {};
 
   monthlyData.forEach(item => {
+
     const date = item.timestamp.toDate();
     const key = date.toDateString();
+
     dailyLoss[key] = (dailyLoss[key] || 0) + (item.waterLoss || 0);
   });
 
   const today = new Date();
+
   const daysInMonth = new Date(
     today.getFullYear(),
     today.getMonth() + 1,
@@ -123,10 +145,13 @@ export default function Summary() {
   const values = [];
 
   for (let i = 1; i <= daysInMonth; i++) {
+
     const d = new Date(today.getFullYear(), today.getMonth(), i);
+
     const key = d.toDateString();
 
     labels.push(formatDatePretty(d));
+
     values.push(((dailyLoss[key] || 0) / 1000).toFixed(2));
   }
 
@@ -151,25 +176,40 @@ export default function Summary() {
           minHeight: "100vh",
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
-          py: 4,
+          py: isMobile ? 8 : 4   // 🔥 pushes content down on mobile
         }}
       >
+
         <Container maxWidth="lg">
 
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Weekly / Monthly NRW Summary
+          {/* TITLE */}
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            fontWeight="bold"
+            gutterBottom
+            textAlign={isMobile ? "center" : "left"}
+          >
+            {isMobile
+              ? "Monthly NRW Summary"
+              : "Weekly / Monthly NRW Summary"}
           </Typography>
 
-          {/* KPI */}
+
+          {/* KPI CARDS */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
 
             <Grid item xs={12} md={3}>
               <Card>
                 <CardContent>
-                  <Typography>Total Water Loss</Typography>
+
+                  <Typography>
+                    Total Water Loss
+                  </Typography>
+
                   <Typography variant="h5">
                     {totalMonthlyLossM3} m³
                   </Typography>
+
                 </CardContent>
               </Card>
             </Grid>
@@ -177,56 +217,111 @@ export default function Summary() {
             <Grid item xs={12} md={3}>
               <Card>
                 <CardContent>
-                  <Typography>Total Leakages</Typography>
+
+                  <Typography>
+                    Total Leakages
+                  </Typography>
+
                   <Typography variant="h5">
                     {monthlyData.length}
                   </Typography>
+
                 </CardContent>
               </Card>
             </Grid>
 
           </Grid>
 
+
           <Grid container spacing={4}>
 
             {/* TABLE */}
             <Grid item xs={12} md={4}>
+
               <Table sx={{ bgcolor: "rgba(255,255,255,0.9)" }}>
+
                 <TableHead>
+
                   <TableRow>
                     <TableCell>Constituency</TableCell>
                     <TableCell>No. Leakages</TableCell>
                     <TableCell>Water Lost (m³)</TableCell>
                   </TableRow>
+
                 </TableHead>
+
                 <TableBody>
+
                   {Object.keys(constituencySummary).map(key => (
+
                     <TableRow key={key}>
+
                       <TableCell>{key}</TableCell>
-                      <TableCell>{constituencySummary[key].count}</TableCell>
+
+                      <TableCell>
+                        {constituencySummary[key].count}
+                      </TableCell>
+
                       <TableCell>
                         {(constituencySummary[key].loss / 1000).toFixed(2)}
                       </TableCell>
+
                     </TableRow>
+
                   ))}
+
                 </TableBody>
+
               </Table>
+
             </Grid>
+
 
             {/* CHARTS */}
             <Grid item xs={12} md={8}>
+
               <Grid container spacing={3}>
 
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ bgcolor:"white", p:3, borderRadius:3, height:400 }}>
-                    <Typography>Constituency-wise Loss (m³)</Typography>
-                    <Bar data={barChartData} options={{ maintainAspectRatio:false }} />
+
+                  <Box
+                    sx={{
+                      bgcolor: "white",
+                      p: 3,
+                      borderRadius: 3,
+                      height: 400
+                    }}
+                  >
+
+                    <Typography>
+                      Constituency-wise Loss (m³)
+                    </Typography>
+
+                    <Bar
+                      data={barChartData}
+                      options={{ maintainAspectRatio: false }}
+                    />
+
                   </Box>
+
                 </Grid>
 
+
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ bgcolor:"white", p:3, borderRadius:3, height:400 }}>
-                    <Typography>Water Loss Trend (m³)</Typography>
+
+                  <Box
+                    sx={{
+                      bgcolor: "white",
+                      p: 3,
+                      borderRadius: 3,
+                      height: 400
+                    }}
+                  >
+
+                    <Typography>
+                      Water Loss Trend (m³)
+                    </Typography>
+
                     <Line
                       data={lineChartData}
                       options={{
@@ -235,21 +330,25 @@ export default function Summary() {
                           x: {
                             ticks: {
                               autoSkip: true,
-                              maxTicksLimit: 7,
-                            },
-                          },
-                        },
+                              maxTicksLimit: 7
+                            }
+                          }
+                        }
                       }}
                     />
+
                   </Box>
+
                 </Grid>
 
               </Grid>
+
             </Grid>
 
           </Grid>
 
         </Container>
+
       </Box>
     </>
   );
