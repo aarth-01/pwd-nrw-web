@@ -262,9 +262,9 @@ export default function Dashboard() {
                   <TableCell>Constituency</TableCell>
                   <TableCell>Leakage Type</TableCell>
                   <TableCell>Pipeline</TableCell>
-                  <TableCell>Duration</TableCell>
-                  <TableCell>Water Loss</TableCell>
-                  <TableCell>Pressure</TableCell>
+                  <TableCell>Duration (minutes)</TableCell>
+                  <TableCell>Water Loss (m³)</TableCell>
+                  <TableCell>Pressure (kg/cm²)</TableCell>
                   <TableCell>Location</TableCell>
                 </TableRow>
               </TableHead>

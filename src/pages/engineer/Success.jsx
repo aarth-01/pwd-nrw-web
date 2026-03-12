@@ -79,7 +79,7 @@ export default function Success() {
               <Typography sx={{ mt: 2, fontSize: 17 }}>
                 Estimated Water Lost:
                 <br />
-                <b style={{ fontSize: 20 }}>{loss} litres</b>
+                <b style={{ fontSize: 20 }}>{loss.toFixed(3)} litres</b>
               </Typography>
 
               {location && (
