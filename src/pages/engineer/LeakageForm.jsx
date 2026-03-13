@@ -202,18 +202,26 @@ export default function LeakageForm() {
         Number(formData.days || 0) * 1440 +
         Number(formData.hours || 0) * 60;
 
+      const diameterMM = Number(formData.diameter || 0);
+
+      const diameterMeters = diameterMM / 1000;
+
+      const pipeArea = Math.PI * Math.pow(diameterMeters / 2, 2);
+
       const adjustedFlow =
         Number(formData.lpm || 0) *
         Math.sqrt(Number(formData.pressure || 0)) *
-        (Number(formData.diameter || 0) / 2);
+        (pipeArea * 1000);
 
       const estimatedLoss = adjustedFlow * totalMinutes;
 
       const leakageData = {
         engineerId: UID,
         ...formData,
+
         durationMinutes: totalMinutes,
         lpm: Number(formData.lpm || 0),
+
         location: selectedLocation
           ? {
               lat: selectedLocation.lat,
@@ -221,16 +229,19 @@ export default function LeakageForm() {
               address: address || "",
             }
           : null,
+
         waterLoss: estimatedLoss,
-        timestamp: new Date(),
+
+        // engineer selected date
+        reportDate: new Date(formData.date),
+
+        // system submission time
+        createdAt: serverTimestamp()
       };
 
       if (navigator.onLine) {
 
-        await addDoc(collection(db, "leakages"), {
-          ...leakageData,
-          timestamp: serverTimestamp(),
-        });
+        await addDoc(collection(db, "leakages"), leakageData);
 
       } else {
 
@@ -417,7 +428,7 @@ if (isMobile) {
             fullWidth
             size="small"
             margin="dense"
-            label="Diameter (inches)"
+            label="Diameter (mm)"
             name="diameter"
             value={formData.diameter}
             onChange={handleNumericChange}

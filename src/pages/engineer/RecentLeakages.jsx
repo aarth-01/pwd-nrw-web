@@ -38,7 +38,7 @@ export default function RecentLeakages() {
       const q = query(
         collection(db, "leakages"),
         where("engineerId", "==", user.uid),
-        orderBy("timestamp", "desc")
+        orderBy("createdAt", "desc")
       );
 
       const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
@@ -140,7 +140,9 @@ export default function RecentLeakages() {
                 data.map((row) => (
                   <TableRow key={row.id} hover>
                     <TableCell>
-                      {row.timestamp?.toDate
+                      {row.reportDate?.toDate
+                        ? row.reportDate.toDate().toLocaleDateString()
+                        : row.timestamp?.toDate
                         ? row.timestamp.toDate().toLocaleDateString()
                         : ""}
                     </TableCell>
@@ -152,7 +154,7 @@ export default function RecentLeakages() {
                     </TableCell>
 
                     <TableCell>
-                      {row.waterLoss || 0}
+                      {row.waterLoss.toFixed(2) || 0}
                     </TableCell>
 
                     <TableCell>
