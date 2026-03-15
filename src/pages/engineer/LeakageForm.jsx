@@ -99,7 +99,12 @@ export default function LeakageForm() {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "attendedBy" && value !== "Department" ? { plumberName: "" } : {}),
+    }));
   };
 
   /* ================= AUTO GPS CAPTURE (MOBILE ONLY) ================= */
@@ -167,7 +172,6 @@ export default function LeakageForm() {
       "lpm",
       "pressure",
       "diameter",
-      "plumberName",
       "attendedBy",
       "damagedByAgency"
     ];
@@ -177,6 +181,10 @@ export default function LeakageForm() {
         newErrors[field] = "This field is required";
       }
     });
+
+    if (formData.attendedBy === "Department" && !formData.plumberName) {
+      newErrors.plumberName = "This field is required";
+    }
 
     if (formData.damagedByAgency === "Yes" && !formData.agencyName) {
       newErrors.agencyName = "Agency Name is required";
@@ -437,18 +445,6 @@ if (isMobile) {
           />
 
           <TextField
-            fullWidth
-            size="small"
-            margin="dense"
-            label="Plumber Name"
-            name="plumberName"
-            value={formData.plumberName}
-            onChange={handleChange}
-            error={!!errors.plumberName}
-            helperText={errors.plumberName}
-          />
-
-          <TextField
             select
             fullWidth
             size="small"
@@ -463,6 +459,20 @@ if (isMobile) {
             <MenuItem value="Department">Department</MenuItem>
             <MenuItem value="External Agency">External Agency</MenuItem>
           </TextField>
+
+          {formData.attendedBy === "Department" && (
+            <TextField
+              fullWidth
+              size="small"
+              margin="dense"
+              label="Plumber Name"
+              name="plumberName"
+              value={formData.plumberName}
+              onChange={handleChange}
+              error={!!errors.plumberName}
+              helperText={errors.plumberName}
+            />
+          )}
 
           <FormControl sx={{ mt: 1 }}>
             <FormLabel>Damage Caused By Other Agencies?</FormLabel>
@@ -639,7 +649,6 @@ InputLabelProps={{ shrink: true }}
 <TextField fullWidth label="Litres per minute (LPM)" name="lpm" margin="normal" onChange={handleNumericChange} error={!!errors.lpm} helperText={errors.lpm}/>
 <TextField fullWidth label="Water Pressure" name="pressure" margin="normal" onChange={handleNumericChange} error={!!errors.pressure} helperText={errors.pressure}/>
 <TextField fullWidth label="Diameter" name="diameter" margin="normal" onChange={handleNumericChange} error={!!errors.diameter} helperText={errors.diameter}/>
-<TextField fullWidth label="Plumber / Meter Reader Name" name="plumberName" margin="normal" onChange={handleChange} />
 <TextField
   select
   fullWidth
@@ -652,6 +661,19 @@ InputLabelProps={{ shrink: true }}
   <MenuItem value="Department">Department</MenuItem>
   <MenuItem value="External Agency">External Agency</MenuItem>
 </TextField>
+
+{formData.attendedBy === "Department" && (
+  <TextField
+    fullWidth
+    label="Plumber / Meter Reader Name"
+    name="plumberName"
+    margin="normal"
+    value={formData.plumberName}
+    onChange={handleChange}
+    error={!!errors.plumberName}
+    helperText={errors.plumberName}
+  />
+)}
 
 <FormControl margin="normal">
   <FormLabel>Damage Caused By Other Agencies?</FormLabel>
