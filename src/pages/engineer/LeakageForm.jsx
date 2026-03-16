@@ -376,6 +376,8 @@ if (isMobile) {
             <MenuItem value="AC">AC</MenuItem>
             <MenuItem value="DI">DI</MenuItem>
             <MenuItem value="HDPE">HDPE</MenuItem>
+            <MenuItem value="MS">MS</MenuItem>
+            <MenuItem value="MDPE">MDPE</MenuItem>
 
           </TextField>
 
