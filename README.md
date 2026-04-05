@@ -20,7 +20,7 @@ Field engineers use this mobile PWA to report pipeline leakages directly from th
 - 🗺️ Manual location adjustment using interactive map
 - 📋 Structured leakage reporting form
 - 💧 Real-time water loss estimation
-- 📶 Offline support — reports saved locally and synced when internet returns
+- 📶 Offline support - reports saved locally and synced when internet returns
 - 📱 Installable as a PWA on Android/iOS
 
 ### Admin (Desktop Dashboard)
@@ -200,16 +200,21 @@ src/
 
 ## 📸 Screenshots
 
-| Engineer Mobile Form | Login Page | Admin Map View |
-| -------------------- | ---------- | -------------- |
+<p align="center">
+  <img src="screenshots/engineer_LeakageForm.jpeg" width="30%" />
+  &nbsp;&nbsp;
+  <img src="screenshots/LoginPage.jpeg" width="30%" />
+  &nbsp;&nbsp;
+  <img src="screenshots/admin_MapView.jpeg" width="30%" />
+</p>
 
-| <img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/5edac300-5306-4fac-bace-f177f28b97a7" />
-| \*<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/c25c646f-2e7c-4d8e-ab0a-9e5cbe621ebb" />
-
-- | \*<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/6bd686cb-c640-4c73-bed4-534855243547" />
-- |
-
----
+<table align="center" border="0">
+  <tr>
+    <td align="center" width="30%"><em>Engineer Mobile Form</em></td>
+    <td align="center" width="30%"><em>Login Page</em></td>
+    <td align="center" width="30%"><em>Admin Map View</em></td>
+  </tr>
+</table>
 
 ## 🏛️ Developed For
 
@@ -221,9 +226,9 @@ Government of Goa, India
 
 ## 👨‍💻 Authors
 
-**Aarth Vajandar**
-**Shreya Toraskar**
-**Suhani Joshi**
+**Aarth Vajandar**  
+**Shreya Toraskar**  
+**Suhani Joshi**  
 **Disha Seethapathy**
 
 ---
@@ -241,18 +246,3 @@ Not licensed for commercial use.
 - [Firebase](https://firebase.google.com/) for backend infrastructure
 - [Material UI](https://mui.com/) for the component library
 - Public Works Department, Goa for domain guidance and requirements
-
-```
-
----
-
-**A few things to fill in before publishing:**
-
-1. Replace `your-username` in the clone URL with your actual GitHub username
-2. Add your actual name and college in the Author section
-3. Take screenshots of the app and drop them in the Screenshots table
-4. Update the project structure if your folder names differ slightly
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-```
