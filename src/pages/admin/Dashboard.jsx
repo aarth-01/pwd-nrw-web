@@ -84,8 +84,12 @@ export default function Dashboard() {
     return leakages
       .filter(item => {
 
-        const date = item.timestamp?.toDate?.();
-        const formattedDate = date ? date.toLocaleDateString() : "";
+        const date =
+        item.reportDate?.toDate?.() ||
+        item.createdAt?.toDate?.() ||
+        item.timestamp?.toDate?.();
+
+const formattedDate = date ? date.toLocaleDateString() : "";
 
         const waterLossM3 = item.waterLoss
           ? (item.waterLoss / 1000).toFixed(3)
@@ -111,9 +115,21 @@ export default function Dashboard() {
         );
 
       })
+
       .sort((a, b) => {
-        const dateA = a.timestamp?.toDate?.() || new Date(0);
-        const dateB = b.timestamp?.toDate?.() || new Date(0);
+
+        const dateA =
+          a.createdAt?.toDate?.() ||
+          a.reportDate?.toDate?.() ||
+          a.timestamp?.toDate?.() ||
+          new Date(0);
+
+        const dateB =
+          b.createdAt?.toDate?.() ||
+          b.reportDate?.toDate?.() ||
+          b.timestamp?.toDate?.() ||
+          new Date(0);
+
         return dateB - dateA;
       });
 
@@ -150,7 +166,10 @@ export default function Dashboard() {
 
     const exportData = filteredTableData.map(item => {
 
-      const date = item.timestamp?.toDate?.();
+      const date =
+      item.reportDate?.toDate?.() ||
+      item.createdAt?.toDate?.() ||
+      item.timestamp?.toDate?.();
 
       return {
         Date: date ? date.toLocaleDateString() : "N/A",
@@ -273,7 +292,11 @@ export default function Dashboard() {
 
                 {paginatedData.map(item => {
 
-                  const date = item.timestamp?.toDate?.();
+                  const date =
+                  item.reportDate?.toDate?.() ||
+                  item.createdAt?.toDate?.() ||
+                  item.timestamp?.toDate?.();
+
                   const waterLossM3 = item.waterLoss
                     ? (item.waterLoss / 1000).toFixed(3)
                     : "0.000";

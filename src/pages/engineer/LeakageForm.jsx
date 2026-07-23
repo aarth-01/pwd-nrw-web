@@ -210,16 +210,10 @@ export default function LeakageForm() {
         Number(formData.days || 0) * 1440 +
         Number(formData.hours || 0) * 60;
 
-      const diameterMM = Number(formData.diameter || 0);
-
-      const diameterMeters = diameterMM / 1000;
-
-      const pipeArea = Math.PI * Math.pow(diameterMeters / 2, 2);
-
       const adjustedFlow =
         Number(formData.lpm || 0) *
-        Math.sqrt(Number(formData.pressure || 0)) *
-        (pipeArea * 1000);
+        (Number(formData.diameter || 0) / 100) *
+        Math.sqrt(Number(formData.pressure || 0));
 
       const estimatedLoss = adjustedFlow * totalMinutes;
 

@@ -82,11 +82,22 @@ export default function Summary() {
   }, []);
 
   const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
 
-  const monthlyData = leakages.filter(item => {
-    const date = item.timestamp?.toDate?.();
-    return date && date.getMonth() === currentMonth;
-  });
+  const monthlyData = leakages.filter((item) => {
+
+    const date =
+      item.reportDate?.toDate?.() ||
+      item.createdAt?.toDate?.() ||
+      item.timestamp?.toDate?.();
+
+    return (
+      date &&
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    );
+
+});
 
   const totalMonthlyLoss = monthlyData.reduce(
     (sum, item) => sum + (item.waterLoss || 0),
@@ -116,7 +127,7 @@ export default function Summary() {
       {
         label: "Water Loss (m³)",
         data: Object.values(constituencySummary).map(i =>
-          (i.loss / 1000).toFixed(2)
+          Number((i.loss / 1000).toFixed(2))
         ),
         backgroundColor: "#1976d2",
       },
@@ -127,10 +138,17 @@ export default function Summary() {
 
   monthlyData.forEach(item => {
 
-    const date = item.timestamp.toDate();
+    const date =
+      item.reportDate?.toDate?.() ||
+      item.createdAt?.toDate?.() ||
+      item.timestamp?.toDate?.();
+
+    if (!date) return;
+
     const key = date.toDateString();
 
     dailyLoss[key] = (dailyLoss[key] || 0) + (item.waterLoss || 0);
+
   });
 
   const today = new Date();
@@ -152,7 +170,7 @@ export default function Summary() {
 
     labels.push(formatDatePretty(d));
 
-    values.push(((dailyLoss[key] || 0) / 1000).toFixed(2));
+    values.push(Number(((dailyLoss[key] || 0) / 1000).toFixed(2)));
   }
 
   const lineChartData = {
